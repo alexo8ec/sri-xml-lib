@@ -46,6 +46,7 @@ $generator->addDetalle([
 $generator->addCampoAdicional('Cliente', 'ROMAGNAREST S.A.S.');
 $generator->addCampoAdicional('Email', 'ROMAGNATRATORIA@GMAIL.COM');
 
+/*
 $archivoP12 = 'tokens/Contimax.p12';
 $password = 'Karla2025';
 try {
@@ -59,7 +60,7 @@ try {
 }
 $xmlFirmado = $firma->firmarXML($xmlSinFirmar);
 
-file_put_contents('factura_firmada.xml', $xmlFirmado);
+file_put_contents('factura_firmada.xml', $xmlFirmado);*/
 
 header('Content-Type: text/xml');
 echo $generator->getXml();
