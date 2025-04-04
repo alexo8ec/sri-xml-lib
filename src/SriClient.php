@@ -6,7 +6,7 @@ class SriClient
 {
     public function enviarSRI($xml)
     {
-        $url = "https://www.sri.gob.ec/sri-comprobante-electronico";  // URL de prueba o producción
+        $url = "https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl";  // URL de prueba o producción
         $postData = [
             'xml' => $xml
         ];
