@@ -12,7 +12,7 @@ class SriClient
         $wsdl = "https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl";  // URL de prueba o producción
         try {
             // Codificar el XML en Base64
-            $xmlBase64 = base64_encode($xml);
+            //$xmlBase64 = base64_encode($xml);
 
             // Crear el cliente SOAP
             $client = new SoapClient($wsdl, [
@@ -23,7 +23,7 @@ class SriClient
 
             // Enviar la solicitud
             $response = $client->validarComprobante([
-                'xml' => $xmlBase64
+                'xml' => $xml
             ]);
 
             return $response;
