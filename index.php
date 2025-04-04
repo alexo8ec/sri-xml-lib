@@ -51,16 +51,13 @@ $archivoP12 = 'tokens/Contimax.p12';
 $password = 'Karla2025';
 try {
     $firma = new FirmaElectronica($archivoP12, $password);
-    echo '<pre>';
-    print_r($firma);
-    exit;
 } catch (Exception $e) {
     echo 'Error al instanciar la clase FirmaElectronica: ' . $e->getMessage();
-    exit;
 }
+$xmlSinFirmar = $generator->getXml();
 $xmlFirmado = $firma->firmarXML($xmlSinFirmar);
 
 file_put_contents('factura_firmada.xml', $xmlFirmado);
 
 header('Content-Type: text/xml');
-echo $generator->getXml();
+echo $xmlFirmado;
