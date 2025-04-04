@@ -2,6 +2,7 @@
 require __DIR__ . '/vendor/autoload.php'; // Cargar dependencias de Composer
 
 use SRI\FirmaElectronica;
+use SRI\SriClient;
 use SRI\XmlGenerator;
 
 $generator = new XmlGenerator();
@@ -56,6 +57,12 @@ try {
 }
 $xmlSinFirmar = $generator->getXml();
 $xmlFirmado = $firma->firmarXML($xmlSinFirmar);
+
+$sriCliente = new SriClient;
+$resultado = $sriCliente->enviarSRI($xmlFirmado);
+echo '<pre>';
+print_r($resultado);
+exit;
 
 file_put_contents('factura_firmada.xml', $xmlFirmado);
 
