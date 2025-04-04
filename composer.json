@@ -1,0 +1,33 @@
+{
+    "name": "alexo8ec/sri-xml-lib",
+    "description": "Librería para generar, firmar y enviar XML al SRI en Laravel",
+    "type": "library",
+    "require": {
+        "php": ">=8.0",
+        "ext-simplexml": "*",
+        "ext-openssl": "*",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "SRI\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "repositories": {
+        "local": {
+            "type": "path",
+            "url": "./sri-xml-lib"
+        }
+    }
+}
