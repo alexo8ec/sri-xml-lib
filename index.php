@@ -1,5 +1,4 @@
 <?php
-echo 1;exit;
 require __DIR__ . '/vendor/autoload.php'; // Cargar dependencias de Composer
 
 use SRI\FirmaElectronica;
