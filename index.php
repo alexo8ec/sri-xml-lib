@@ -58,7 +58,7 @@ try {
 $xmlSinFirmar = $generator->getXml();
 $xmlFirmado = $firma->firmarXML($xmlSinFirmar);
 
-$xmlFirmado = '<?xml version="1.0" encoding="UTF-8"?><factura id="comprobante" version="1.1.0">
+/*$xmlFirmado = '<?xml version="1.0" encoding="UTF-8"?><factura id="comprobante" version="1.1.0">
   <infoTributaria>
     <ambiente>2</ambiente>
     <tipoEmision>1</tipoEmision>
@@ -230,7 +230,7 @@ iMQY9yF2LL4f3+hf8bgUlhLRRU4stpZDtkhlyQ==
 </ds:KeyValue>
 </ds:KeyInfo>
 <ds:Object Id="Signature836068-Object18454"><etsi:QualifyingProperties Target="#Signature836068"><etsi:SignedProperties Id="Signature836068-SignedProperties137033"><etsi:SignedSignatureProperties><etsi:SigningTime>2024-12-31T23:54:44-05:00</etsi:SigningTime><etsi:SigningCertificate><etsi:Cert><etsi:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>8S7WgUiZIuIkjLnWmcDzCvFlU+U=</ds:DigestValue></etsi:CertDigest><etsi:IssuerSerial><ds:X509IssuerName>CN=AUTORIDAD DE CERTIFICACION SUBCA-2 SECURITY DATA,OU=ENTIDAD DE CERTIFICACION DE INFORMACION,O=SECURITY DATA S.A. 2,C=EC</ds:X509IssuerName><ds:X509SerialNumber>207570234</ds:X509SerialNumber></etsi:IssuerSerial></etsi:Cert></etsi:SigningCertificate></etsi:SignedSignatureProperties><etsi:SignedDataObjectProperties><etsi:DataObjectFormat ObjectReference="#Reference-ID-828053"><etsi:Description>compel</etsi:Description><etsi:MimeType>text/xml</etsi:MimeType></etsi:DataObjectFormat></etsi:SignedDataObjectProperties></etsi:SignedProperties></etsi:QualifyingProperties></ds:Object></ds:Signature></factura>
-';
+';*/
 
 $sriCliente = new SriClient;
 $resultado = $sriCliente->enviarSRI($xmlFirmado);
