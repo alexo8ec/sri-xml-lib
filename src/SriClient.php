@@ -2,24 +2,33 @@
 
 namespace SRI;
 
+use SoapClient;
+use SoapFault;
+
 class SriClient
 {
     public function enviarSRI($xml)
     {
-        $url = "https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl";  // URL de prueba o producción
-        $postData = [
-            'xml' => $xml
-        ];
+        $wsdl = "https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl";  // URL de prueba o producción
+        try {
+            // Codificar el XML en Base64
+            $xmlBase64 = base64_encode($xml);
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Si es necesario desactivar la verificación SSL
+            // Crear el cliente SOAP
+            $client = new SoapClient($wsdl, [
+                'trace' => 1,
+                'exceptions' => true,
+                'cache_wsdl' => WSDL_CACHE_NONE,
+            ]);
 
-        $response = curl_exec($ch);
-        curl_close($ch);
+            // Enviar la solicitud
+            $response = $client->validarComprobante([
+                'xml' => $xmlBase64
+            ]);
 
-        return $response;
+            return $response;
+        } catch (SoapFault $e) {
+            return "Error: " . $e->getMessage();
+        }
     }
 }
