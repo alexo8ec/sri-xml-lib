@@ -22,8 +22,12 @@ class FirmaElectronica
         $contenidoP12 = file_get_contents($archivoP12);
         $certificados = [];
 
-        if (!openssl_pkcs12_read($contenidoP12, $certificados, $password)) {
-            throw new Exception("Error al leer el certificado P12.");
+        try {
+            if (!openssl_pkcs12_read($contenidoP12, $certificados, $password)) {
+                //throw new Exception("Error al leer el certificado P12.");
+            }
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
 
         $this->certificado = $certificados['cert'];

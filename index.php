@@ -1,9 +1,11 @@
 <?php
 require __DIR__ . '/vendor/autoload.php'; // Cargar dependencias de Composer
 
+use SRI\FirmaElectronica;
 use SRI\XmlGenerator;
 
 $generator = new XmlGenerator();
+
 $generator->setInfoTributaria([
     'ambiente' => '2',
     'tipoEmision' => '1',
@@ -43,6 +45,21 @@ $generator->addDetalle([
 
 $generator->addCampoAdicional('Cliente', 'ROMAGNAREST S.A.S.');
 $generator->addCampoAdicional('Email', 'ROMAGNATRATORIA@GMAIL.COM');
+
+$archivoP12 = 'tokens/Contimax.p12';
+$password = 'Karla2025';
+try {
+    $firma = new FirmaElectronica($archivoP12, $password);
+    echo '<pre>';
+    print_r($firma);
+    exit;
+} catch (Exception $e) {
+    echo 'Error al instanciar la clase FirmaElectronica: ' . $e->getMessage();
+    exit;
+}
+$xmlFirmado = $firma->firmarXML($xmlSinFirmar);
+
+file_put_contents('factura_firmada.xml', $xmlFirmado);
 
 header('Content-Type: text/xml');
 echo $generator->getXml();
