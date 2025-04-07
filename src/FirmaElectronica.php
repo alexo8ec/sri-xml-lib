@@ -77,30 +77,30 @@ class FirmaElectronica
         $digestComprobante = base64_encode(sha1($canonical, true));
 
         $signedPropsXml = <<<XML
-    <etsi:SignedProperties xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="$idSignedProps">
-        <etsi:SignedSignatureProperties>
-            <etsi:SigningTime>$fechaFirma</etsi:SigningTime>
-            <etsi:SigningCertificate>
-                <etsi:Cert>
-                    <etsi:CertDigest>
-                        <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
-                        <ds:DigestValue>$digestCert</ds:DigestValue>
-                    </etsi:CertDigest>
-                    <etsi:IssuerSerial>
-                        <ds:X509IssuerName>$issuerDN</ds:X509IssuerName>
-                        <ds:X509SerialNumber>$certSerialNumber</ds:X509SerialNumber>
-                    </etsi:IssuerSerial>
-                </etsi:Cert>
-            </etsi:SigningCertificate>
-        </etsi:SignedSignatureProperties>
-        <etsi:SignedDataObjectProperties>
-            <etsi:DataObjectFormat ObjectReference="#$idReferenceComprobante">
-                <etsi:Description>compel</etsi:Description>
-                <etsi:MimeType>text/xml</etsi:MimeType>
-            </etsi:DataObjectFormat>
-        </etsi:SignedDataObjectProperties>
-    </etsi:SignedProperties>
-    XML;
+<etsi:SignedProperties xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="$idSignedProps">
+    <etsi:SignedSignatureProperties>
+        <etsi:SigningTime>$fechaFirma</etsi:SigningTime>
+        <etsi:SigningCertificate>
+            <etsi:Cert>
+                <etsi:CertDigest>
+                    <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                    <ds:DigestValue>$digestCert</ds:DigestValue>
+                </etsi:CertDigest>
+                <etsi:IssuerSerial>
+                    <ds:X509IssuerName>$issuerDN</ds:X509IssuerName>
+                    <ds:X509SerialNumber>$certSerialNumber</ds:X509SerialNumber>
+                </etsi:IssuerSerial>
+            </etsi:Cert>
+        </etsi:SigningCertificate>
+    </etsi:SignedSignatureProperties>
+    <etsi:SignedDataObjectProperties>
+        <etsi:DataObjectFormat ObjectReference="#$idReferenceComprobante">
+            <etsi:Description>compel</etsi:Description>
+            <etsi:MimeType>text/xml</etsi:MimeType>
+        </etsi:DataObjectFormat>
+    </etsi:SignedDataObjectProperties>
+</etsi:SignedProperties>
+XML;
 
         $tempDOM2 = new DOMDocument();
         $tempDOM2->loadXML($signedPropsXml);
@@ -172,11 +172,11 @@ class FirmaElectronica
         $signatureNode->appendChild($keyInfo);
 
         // Object con QualifyingProperties como string XML
-       $objectXml = <<<XML
+        $objectXml = <<<XML
 <ds:Object Id="$idObject" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-  <etsi:QualifyingProperties Target="#$idFirma">
-    $signedPropsXml
-  </etsi:QualifyingProperties>
+<etsi:QualifyingProperties xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" Target="#$idFirma">
+$signedPropsXml
+</etsi:QualifyingProperties>
 </ds:Object>
 XML;
 
