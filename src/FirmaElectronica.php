@@ -220,6 +220,7 @@ XML;
 
         // Crear manualmente el ds:Object como XML plano sin namespace extra
         $qualPropsXml = $objDSig->saveXML($qualProps);
+        echo 2;exit;
 
         $objectXml = <<<XML
         <ds:Object Id="$idObject" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
