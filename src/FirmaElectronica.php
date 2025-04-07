@@ -49,18 +49,14 @@ class FirmaElectronica
         $certificado = $certs['cert'];
         $clavePrivada = $certs['pkey'];
         $certParsed = openssl_x509_parse($certificado);
-
-        // Serial y emisor del certificado
         $certSerialNumber = $certParsed['serialNumber'];
         $issuer = $certParsed['issuer'];
         $issuerDN = "CN={$issuer['CN']},OU={$issuer['OU']},O={$issuer['O']},C={$issuer['C']}";
 
-        // Digest del certificado
         $certClean = str_replace(["-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----", "\r", "\n"], '', $certificado);
         $certBin = base64_decode($certClean);
         $digestCert = base64_encode(sha1($certBin, true));
 
-        // Cargar XML original
         $doc = new DOMDocument();
         $doc->preserveWhiteSpace = false;
         $doc->formatOutput = true;
@@ -71,170 +67,127 @@ class FirmaElectronica
         $idReferenceComprobante = 'Reference-ID-' . rand(100000, 999999);
         $idKeyInfo = 'Certificate' . rand(1000000, 9999999);
         $idObject = $idFirma . '-Object' . rand(100000, 999999);
+        $fechaFirma = (new DateTime('now', new DateTimeZone('America/Guayaquil')))->format('Y-m-d\TH:i:sP');
 
-        // Digest del comprobante
         $comprobante = $doc->getElementsByTagName('*')->item(0);
         $comprobanteClone = $comprobante->cloneNode(true);
         $tempDOM = new DOMDocument('1.0', 'UTF-8');
         $tempDOM->appendChild($tempDOM->importNode($comprobanteClone, true));
         $canonical = $tempDOM->C14N();
         $digestComprobante = base64_encode(sha1($canonical, true));
-        $fechaFirma = (new DateTime('now', new DateTimeZone('America/Guayaquil')))->format('Y-m-d\TH:i:sP');
-        // Digest de SignedProperties
+
         $signedPropsXml = <<<XML
-<etsi:SignedProperties xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="$idSignedProps">
-<etsi:SignedSignatureProperties>
-<etsi:SigningTime>$fechaFirma</etsi:SigningTime>
-<etsi:SigningCertificate>
-<etsi:Cert>
-<etsi:CertDigest>
-  <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
-  <ds:DigestValue>$digestCert</ds:DigestValue>
-</etsi:CertDigest>
-<etsi:IssuerSerial>
-  <ds:X509IssuerName>$issuerDN</ds:X509IssuerName>
-  <ds:X509SerialNumber>$certSerialNumber</ds:X509SerialNumber>
-</etsi:IssuerSerial>
-</etsi:Cert>
-</etsi:SigningCertificate>
-</etsi:SignedSignatureProperties>
-<etsi:SignedDataObjectProperties>
-<etsi:DataObjectFormat ObjectReference="#$idReferenceComprobante">
-<etsi:Description>compel</etsi:Description>
-<etsi:MimeType>text/xml</etsi:MimeType>
-</etsi:DataObjectFormat>
-</etsi:SignedDataObjectProperties>
-</etsi:SignedProperties>
-XML;
+    <etsi:SignedProperties xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="$idSignedProps">
+        <etsi:SignedSignatureProperties>
+            <etsi:SigningTime>$fechaFirma</etsi:SigningTime>
+            <etsi:SigningCertificate>
+                <etsi:Cert>
+                    <etsi:CertDigest>
+                        <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                        <ds:DigestValue>$digestCert</ds:DigestValue>
+                    </etsi:CertDigest>
+                    <etsi:IssuerSerial>
+                        <ds:X509IssuerName>$issuerDN</ds:X509IssuerName>
+                        <ds:X509SerialNumber>$certSerialNumber</ds:X509SerialNumber>
+                    </etsi:IssuerSerial>
+                </etsi:Cert>
+            </etsi:SigningCertificate>
+        </etsi:SignedSignatureProperties>
+        <etsi:SignedDataObjectProperties>
+            <etsi:DataObjectFormat ObjectReference="#$idReferenceComprobante">
+                <etsi:Description>compel</etsi:Description>
+                <etsi:MimeType>text/xml</etsi:MimeType>
+            </etsi:DataObjectFormat>
+        </etsi:SignedDataObjectProperties>
+    </etsi:SignedProperties>
+    XML;
 
         $tempDOM2 = new DOMDocument();
         $tempDOM2->loadXML($signedPropsXml);
         $canonicalSignedProps = $tempDOM2->C14N();
         $digestSignedProps = base64_encode(sha1($canonicalSignedProps, true));
 
-        // Preparar Signature
+        // CREAR NODO FIRMA
         $objDSig = new DOMDocument('1.0', 'UTF-8');
         $signatureNode = $objDSig->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:Signature');
         $signatureNode->setAttribute('Id', $idFirma);
 
-        // SignedInfo
         $signedInfo = $objDSig->createElement('ds:SignedInfo');
-        $signedInfo->setAttribute('Id', "$idFirma-SignedInfo" . rand(100000, 999999));
+        $signedInfo->appendChild($objDSig->createElement('ds:CanonicalizationMethod'))->setAttribute('Algorithm', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315');
+        $signedInfo->appendChild($objDSig->createElement('ds:SignatureMethod'))->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#rsa-sha1');
 
-        $canonMethod = $objDSig->createElement('ds:CanonicalizationMethod');
-        $canonMethod->setAttribute('Algorithm', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315');
+        // Referencias
+        $ref1 = $objDSig->createElement('ds:Reference');
+        $ref1->setAttribute('Id', 'SignedPropertiesID' . rand(100000, 999999));
+        $ref1->setAttribute('Type', 'http://uri.etsi.org/01903#SignedProperties');
+        $ref1->setAttribute('URI', "#$idSignedProps");
+        $ref1->appendChild($objDSig->createElement('ds:DigestMethod'))->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
+        $ref1->appendChild($objDSig->createElement('ds:DigestValue', $digestSignedProps));
+        $signedInfo->appendChild($ref1);
 
-        $sigMethod = $objDSig->createElement('ds:SignatureMethod');
-        $sigMethod->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#rsa-sha1');
+        $ref2 = $objDSig->createElement('ds:Reference');
+        $ref2->setAttribute('URI', "#$idKeyInfo");
+        $ref2->appendChild($objDSig->createElement('ds:DigestMethod'))->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
+        $ref2->appendChild($objDSig->createElement('ds:DigestValue', $digestCert));
+        $signedInfo->appendChild($ref2);
 
-        $signedInfo->appendChild($canonMethod);
-        $signedInfo->appendChild($sigMethod);
-
-        // Referencia a SignedProperties
-        $refSignedProps = $objDSig->createElement('ds:Reference');
-        $refSignedProps->setAttribute('Id', 'SignedPropertiesID' . rand(100000, 999999));
-        $refSignedProps->setAttribute('Type', 'http://uri.etsi.org/01903#SignedProperties');
-        $refSignedProps->setAttribute('URI', "#$idSignedProps");
-
-        $dm = $objDSig->createElement('ds:DigestMethod');
-        $dm->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
-        $dv = $objDSig->createElement('ds:DigestValue', $digestSignedProps);
-        $refSignedProps->appendChild($dm);
-        $refSignedProps->appendChild($dv);
-        $signedInfo->appendChild($refSignedProps);
-
-        // Referencia a certificado
-        $refCert = $objDSig->createElement('ds:Reference');
-        $refCert->setAttribute('URI', "#$idKeyInfo");
-        $dmCert = $objDSig->createElement('ds:DigestMethod');
-        $dmCert->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
-        $dvCert = $objDSig->createElement('ds:DigestValue', $digestCert);
-        $refCert->appendChild($dmCert);
-        $refCert->appendChild($dvCert);
-        $signedInfo->appendChild($refCert);
-
-        // Referencia al comprobante
-        $refComp = $objDSig->createElement('ds:Reference');
-        $refComp->setAttribute('Id', $idReferenceComprobante);
-        $refComp->setAttribute('URI', '#comprobante');
-
+        $ref3 = $objDSig->createElement('ds:Reference');
+        $ref3->setAttribute('Id', $idReferenceComprobante);
+        $ref3->setAttribute('URI', '#comprobante');
         $transforms = $objDSig->createElement('ds:Transforms');
-        $t1 = $objDSig->createElement('ds:Transform');
-        $t1->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#enveloped-signature');
-        $transforms->appendChild($t1);
-        $refComp->appendChild($transforms);
-
-        $dmComp = $objDSig->createElement('ds:DigestMethod');
-        $dmComp->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
-        $dvComp = $objDSig->createElement('ds:DigestValue', $digestComprobante);
-        $refComp->appendChild($dmComp);
-        $refComp->appendChild($dvComp);
-        $signedInfo->appendChild($refComp);
+        $transform = $objDSig->createElement('ds:Transform');
+        $transform->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#enveloped-signature');
+        $transforms->appendChild($transform);
+        $ref3->appendChild($transforms);
+        $ref3->appendChild($objDSig->createElement('ds:DigestMethod'))->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
+        $ref3->appendChild($objDSig->createElement('ds:DigestValue', $digestComprobante));
+        $signedInfo->appendChild($ref3);
 
         $signatureNode->appendChild($signedInfo);
 
-        // Firmar SignedInfo
+        // Firma
         $tempSigned = new DOMDocument();
         $tempSigned->appendChild($tempSigned->importNode($signedInfo, true));
         $canonicalSignedInfo = $tempSigned->C14N();
         openssl_sign($canonicalSignedInfo, $firmaBinaria, $clavePrivada, OPENSSL_ALGO_SHA1);
         $firmaBase64 = base64_encode($firmaBinaria);
+        $signatureNode->appendChild($objDSig->createElement('ds:SignatureValue', $firmaBase64));
 
-        $sigVal = $objDSig->createElement('ds:SignatureValue', $firmaBase64);
-        $sigVal->setAttribute('Id', 'SignatureValue' . rand(100000, 999999));
-        $signatureNode->appendChild($sigVal);
-
-        // KeyInfo + KeyValue
+        // KeyInfo
         $pubKey = openssl_pkey_get_details(openssl_pkey_get_public($certificado));
         $mod = base64_encode($pubKey['rsa']['n']);
         $exp = base64_encode($pubKey['rsa']['e']);
-
         $keyInfo = $objDSig->createElement('ds:KeyInfo');
         $keyInfo->setAttribute('Id', $idKeyInfo);
         $x509Data = $objDSig->createElement('ds:X509Data');
         $x509Cert = $objDSig->createElement('ds:X509Certificate', chunk_split($certClean, 76, "\n"));
         $x509Data->appendChild($x509Cert);
         $keyInfo->appendChild($x509Data);
-
-        $keyValue = $objDSig->createElement('ds:KeyValue');
+        $rsaKeyValue = $objDSig->createElement('ds:KeyValue');
         $rsa = $objDSig->createElement('ds:RSAKeyValue');
         $rsa->appendChild($objDSig->createElement('ds:Modulus', chunk_split($mod, 76, "\n")));
         $rsa->appendChild($objDSig->createElement('ds:Exponent', $exp));
-        $keyValue->appendChild($rsa);
-        $keyInfo->appendChild($keyValue);
-
+        $rsaKeyValue->appendChild($rsa);
+        $keyInfo->appendChild($rsaKeyValue);
         $signatureNode->appendChild($keyInfo);
-        $object = $objDSig->createElement('ds:Object');
-        $object->setAttribute('Id', $idObject);
 
-        $qualProps = $this->crearNodoObjectConQualifyingProperties(
-            $objDSig,
-            $idFirma,
-            $idSignedProps,
-            $idReferenceComprobante,
-            $digestCert,
-            $issuerDN,
-            $certSerialNumber,
-            $fechaFirma
-        );
+        // Object con QualifyingProperties como string XML
+        $objectXml = <<<XML
+    <ds:Object Id="$idObject" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+    <etsi:QualifyingProperties xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" Target="#$idFirma">
+    $signedPropsXml
+    </etsi:QualifyingProperties>
+    </ds:Object>
+    XML;
 
-        // Exportar QualifyingProperties a string
-        $qualPropsXml = $objDSig->saveXML($qualProps);
+        $objDOM = new DOMDocument();
+        $objDOM->loadXML($objectXml);
+        $signatureNode->appendChild($objDSig->importNode($objDOM->documentElement, true));
 
-        // Construir todo el nodo Object como string XML
-        $objectXmlString = '<ds:Object Id="' . $idObject . '" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">' . $qualPropsXml . '</ds:Object>';
+        // Adjuntar la firma al XML original
+        $firmaFinal = $doc->importNode($signatureNode, true);
+        $doc->documentElement->appendChild($firmaFinal);
 
-        // Cargar ese string manualmente para evitar que DOMDocument altere el namespace
-        $domObjectFinal = new DOMDocument();
-        $domObjectFinal->loadXML($objectXmlString);
-
-        // Importar el nodo final y adjuntarlo a la firma
-        $finalObjectNode = $objDSig->importNode($domObjectFinal->documentElement, true);
-        $signatureNode->appendChild($finalObjectNode);
-
-        // Insertar Signature en el XML original
-        $signatureImportada = $doc->importNode($signatureNode, true);
-        $doc->documentElement->appendChild($signatureImportada);
         return $doc->saveXML();
     }
     function crearNodoObjectConQualifyingProperties($doc, $signatureId, $signedPropertiesId, $referenceId, $digestCertBase64, $issuerName, $serialNumber, $signingTime = null)
