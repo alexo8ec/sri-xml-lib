@@ -285,6 +285,25 @@ XML;
         $cert->appendChild($issuerSerial);
         $signingCert->appendChild($cert);
 
+        // Firma política
+        $signaturePolicyIdentifier = $doc->createElementNS($XADES, 'etsi:SignaturePolicyIdentifier');
+        $signaturePolicyId = $doc->createElementNS($XADES, 'etsi:SignaturePolicyId');
+
+        $sigPolicyId = $doc->createElementNS($XADES, 'etsi:SigPolicyId');
+        $identifier = $doc->createElementNS($XADES, 'etsi:Identifier', 'http://www.w3.org/2000/09/xmldsig#');
+        $sigPolicyId->appendChild($identifier);
+        $signaturePolicyId->appendChild($sigPolicyId);
+
+        $sigPolicyHash = $doc->createElementNS($XADES, 'etsi:SigPolicyHash');
+        $digestMethodPolicy = $doc->createElementNS($DS, 'ds:DigestMethod');
+        $digestMethodPolicy->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
+        $digestValuePolicy = $doc->createElementNS($DS, 'ds:DigestValue', base64_encode(sha1('http://www.w3.org/2000/09/xmldsig#', true)));
+        $sigPolicyHash->appendChild($digestMethodPolicy);
+        $sigPolicyHash->appendChild($digestValuePolicy);
+        $signaturePolicyId->appendChild($sigPolicyHash);
+
+        $signaturePolicyIdentifier->appendChild($signaturePolicyId);
+
         // Juntar propiedades de firma
         $sigSigProps->appendChild($signingTimeNode);
         $sigSigProps->appendChild($signingCert);
