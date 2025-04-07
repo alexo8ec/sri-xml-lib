@@ -7,9 +7,13 @@ use SoapFault;
 
 class SriClient
 {
-    public function enviarSRI($xml)
+    public function enviarSRI($xml, $ambiente)
     {
-        $wsdl = "https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl";  // URL de prueba o producción
+        if ($ambiente == 1) {
+            $wsdl = "https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl";
+        } else {
+            $wsdl = "https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl";  // URL de prueba o producción
+        }
         try {
             // Codificar el XML en Base64
             //$xmlBase64 = base64_encode($xml);
