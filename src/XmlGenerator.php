@@ -2,7 +2,6 @@
 
 namespace SRI;
 
-use Exception;
 use SimpleXMLElement;
 
 class XmlGenerator
@@ -33,32 +32,64 @@ class XmlGenerator
     public function setInfoFactura($data)
     {
         $infoFactura = $this->xml->addChild('infoFactura');
-        foreach ($data as $key => $value) {
-            $infoFactura->addChild($key, htmlspecialchars($value));
-        }
-    }
+        $infoFactura->addChild('fechaEmision', $data['fechaEmision']);
+        $infoFactura->addChild('dirEstablecimiento', htmlspecialchars($data['dirEstablecimiento']));
+        $infoFactura->addChild('obligadoContabilidad', $data['obligadoContabilidad']);
+        $infoFactura->addChild('tipoIdentificacionComprador', $data['tipoIdentificacionComprador']);
+        $infoFactura->addChild('razonSocialComprador', htmlspecialchars($data['razonSocialComprador']));
+        $infoFactura->addChild('identificacionComprador', $data['identificacionComprador']);
+        $infoFactura->addChild('totalSinImpuestos', $data['totalSinImpuestos']);
+        $infoFactura->addChild('totalDescuento', $data['totalDescuento']);
 
-    public function addDetalle($detalle)
-    {
-        $detalles = $this->xml->addChild('detalles');
-        $detalleNode = $detalles->addChild('detalle');
-        foreach ($detalle as $key => $value) {
-            if (is_array($value)) {
-                $subNode = $detalleNode->addChild($key);
-                foreach ($value as $subKey => $subValue) {
-                    $subNode->addChild($subKey, htmlspecialchars($subValue));
-                }
-            } else {
-                $detalleNode->addChild($key, htmlspecialchars($value));
+        $totalConImpuestos = $infoFactura->addChild('totalConImpuestos');
+        foreach ($data['totalConImpuestos'] as $impuesto) {
+            $impuestoNode = $totalConImpuestos->addChild('totalImpuesto');
+            foreach ($impuesto as $key => $value) {
+                $impuestoNode->addChild($key, $value);
+            }
+        }
+
+        $infoFactura->addChild('propina', $data['propina']);
+        $infoFactura->addChild('importeTotal', $data['importeTotal']);
+        $infoFactura->addChild('moneda', htmlspecialchars($data['moneda']));
+
+        $pagos = $infoFactura->addChild('pagos');
+        foreach ($data['pagos'] as $pago) {
+            $pagoNode = $pagos->addChild('pago');
+            foreach ($pago as $key => $value) {
+                $pagoNode->addChild($key, $value);
             }
         }
     }
 
-    public function addCampoAdicional($nombre, $valor)
+    public function addDetalles($detallesArray)
+    {
+        $detalles = $this->xml->addChild('detalles');
+        foreach ($detallesArray as $detalle) {
+            $detalleNode = $detalles->addChild('detalle');
+            foreach ($detalle as $key => $value) {
+                if ($key === 'impuestos') {
+                    $impuestosNode = $detalleNode->addChild('impuestos');
+                    foreach ($value as $impuesto) {
+                        $impuestoNode = $impuestosNode->addChild('impuesto');
+                        foreach ($impuesto as $subKey => $subValue) {
+                            $impuestoNode->addChild($subKey, $subValue);
+                        }
+                    }
+                } else {
+                    $detalleNode->addChild($key, htmlspecialchars($value));
+                }
+            }
+        }
+    }
+
+    public function addInfoAdicional($campos)
     {
         $infoAdicional = $this->xml->addChild('infoAdicional');
-        $campoAdicional = $infoAdicional->addChild('campoAdicional', htmlspecialchars($valor));
-        $campoAdicional->addAttribute('nombre', $nombre);
+        foreach ($campos as $nombre => $valor) {
+            $campoAdicional = $infoAdicional->addChild('campoAdicional', htmlspecialchars($valor));
+            $campoAdicional->addAttribute('nombre', $nombre);
+        }
     }
 
     public function getXml()
