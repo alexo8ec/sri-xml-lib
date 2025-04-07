@@ -172,13 +172,13 @@ class FirmaElectronica
         $signatureNode->appendChild($keyInfo);
 
         // Object con QualifyingProperties como string XML
-        $objectXml = <<<XML
-        <ds:Object Id="$idObject" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-          <etsi:QualifyingProperties Target="#$idFirma">
-            $signedPropsXml
-          </etsi:QualifyingProperties>
-        </ds:Object>
-        XML;
+       $objectXml = <<<XML
+<ds:Object Id="$idObject" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+  <etsi:QualifyingProperties Target="#$idFirma">
+    $signedPropsXml
+  </etsi:QualifyingProperties>
+</ds:Object>
+XML;
 
         $objDOM = new DOMDocument();
         $objDOM->loadXML($objectXml);
