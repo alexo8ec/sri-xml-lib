@@ -206,19 +206,27 @@ XML;
         $signatureNode->appendChild($keyInfo);
 
         // Object con QualifyingProperties
-        $object = $objDSig->createElement('ds:Object');
+        /*$object = $objDSig->createElement('ds:Object');
         $object->setAttribute('Id', $idObject);
-
         $qpDom = new DOMDocument();
         $qpDom->loadXML($signedPropsXml);
-        //$qp = $objDSig->importNode($qpDom->documentElement->parentNode ?? $qpDom->documentElement, true);
         $qp = $objDSig->importNode($qpDom->documentElement, true);
-
         $qpWrapper = $objDSig->createElementNS('http://uri.etsi.org/01903/v1.3.2#', 'etsi:QualifyingProperties');
         $qpWrapper->setAttribute('Target', "#$idFirma");
         $qpWrapper->appendChild($qp);
-
         $object->appendChild($qpWrapper);
+        $signatureNode->appendChild($object);*/
+        
+        $object = $this->crearNodoObjectConQualifyingProperties(
+            $objDSig,                  // DOMDocument $doc
+            $idFirma,                  // string $signatureId
+            $idSignedProps,            // string $signedPropertiesId
+            $idReferenceComprobante,   // string $referenceId
+            $digestCert,               // string $digestCertBase64
+            $issuerDN,                 // string $issuerName
+            $certSerialNumber,         // string $serialNumber
+            $fechaFirma                // string $signingTime
+        );
         $signatureNode->appendChild($object);
 
         // Insertar Signature en el XML original
