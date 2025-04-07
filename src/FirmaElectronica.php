@@ -216,7 +216,7 @@ XML;
         $qpWrapper->appendChild($qp);
         $object->appendChild($qpWrapper);
         $signatureNode->appendChild($object);*/
-        
+
         $object = $this->crearNodoObjectConQualifyingProperties(
             $objDSig,                  // DOMDocument $doc
             $idFirma,                  // string $signatureId
@@ -247,6 +247,7 @@ XML;
         // <etsi:QualifyingProperties>
         $qualProps = $doc->createElementNS($XADES, 'etsi:QualifyingProperties');
         $qualProps->setAttribute('Target', '#' . $signatureId);
+        $qualProps->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:etsi', $XADES);
 
         // <etsi:SignedProperties>
         $signedProps = $doc->createElementNS($XADES, 'etsi:SignedProperties');
