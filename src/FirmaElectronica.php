@@ -218,8 +218,20 @@ XML;
             $fechaFirma
         );
 
-        $object->appendChild($qualProps);
-        $signatureNode->appendChild($object);
+        // Crear manualmente el ds:Object como XML plano sin namespace extra
+        $qualPropsXml = $objDSig->saveXML($qualProps);
+
+        $objectXml = <<<XML
+        <ds:Object Id="$idObject" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+        $qualPropsXml
+        </ds:Object>
+        XML;
+
+        $tempDOMObject = new DOMDocument();
+        $tempDOMObject->loadXML($objectXml);
+        $finalObject = $objDSig->importNode($tempDOMObject->documentElement, true);
+
+        $signatureNode->appendChild($finalObject);
 
         // Insertar Signature en el XML original
         $signatureImportada = $doc->importNode($signatureNode, true);
