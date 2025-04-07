@@ -174,7 +174,7 @@ XML;
         // Object con QualifyingProperties como string XML
         $objectXml = <<<XML
 <ds:Object Id="$idObject" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-<etsi:QualifyingProperties Target="#$idFirma">
+<etsi:QualifyingProperties xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" Target="#$idFirma">
 $signedPropsXml
 </etsi:QualifyingProperties>
 </ds:Object>
