@@ -247,7 +247,7 @@ XML;
         // <etsi:QualifyingProperties>
         $qualProps = $doc->createElementNS($XADES, 'etsi:QualifyingProperties');
         $qualProps->setAttribute('Target', '#' . $signatureId);
-        $qualProps->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:etsi', $XADES);
+        //$qualProps->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:etsi', $XADES);
 
         // <etsi:SignedProperties>
         $signedProps = $doc->createElementNS($XADES, 'etsi:SignedProperties');
