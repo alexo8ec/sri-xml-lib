@@ -226,4 +226,83 @@ XML;
         $doc->documentElement->appendChild($signatureImportada);
         return $doc->saveXML();
     }
+    function crearNodoObjectConQualifyingProperties($doc, $signatureId, $signedPropertiesId, $referenceId, $digestCertBase64, $issuerName, $serialNumber, $signingTime = null)
+    {
+        $DS = 'http://www.w3.org/2000/09/xmldsig#';
+        $XADES = 'http://uri.etsi.org/01903/v1.3.2#';
+
+        // Crear <ds:Object>
+        $objectNode = $doc->createElementNS($DS, 'ds:Object');
+        $objectId = $signatureId . '-Object' . rand(100000, 999999);
+        $objectNode->setAttribute('Id', $objectId);
+
+        // <etsi:QualifyingProperties>
+        $qualProps = $doc->createElementNS($XADES, 'etsi:QualifyingProperties');
+        $qualProps->setAttribute('Target', '#' . $signatureId);
+
+        // <etsi:SignedProperties>
+        $signedProps = $doc->createElementNS($XADES, 'etsi:SignedProperties');
+        $signedProps->setAttribute('Id', $signedPropertiesId);
+
+        // <etsi:SignedSignatureProperties>
+        $sigSigProps = $doc->createElementNS($XADES, 'etsi:SignedSignatureProperties');
+
+        // <etsi:SigningTime>
+        if ($signingTime === null) {
+            $signingTime = gmdate('Y-m-d\TH:i:sP'); // Firma en UTC
+        }
+        $signingTimeNode = $doc->createElementNS($XADES, 'etsi:SigningTime', $signingTime);
+
+        // <etsi:SigningCertificate>
+        $signingCert = $doc->createElementNS($XADES, 'etsi:SigningCertificate');
+        $cert = $doc->createElementNS($XADES, 'etsi:Cert');
+
+        // <etsi:CertDigest>
+        $certDigest = $doc->createElementNS($XADES, 'etsi:CertDigest');
+        $digestMethod = $doc->createElementNS($DS, 'ds:DigestMethod');
+        $digestMethod->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
+        $digestValue = $doc->createElementNS($DS, 'ds:DigestValue', $digestCertBase64);
+        $certDigest->appendChild($digestMethod);
+        $certDigest->appendChild($digestValue);
+
+        // <etsi:IssuerSerial>
+        $issuerSerial = $doc->createElementNS($XADES, 'etsi:IssuerSerial');
+        $issuerNameNode = $doc->createElementNS($DS, 'ds:X509IssuerName', $issuerName);
+        $serialNumberNode = $doc->createElementNS($DS, 'ds:X509SerialNumber', $serialNumber);
+        $issuerSerial->appendChild($issuerNameNode);
+        $issuerSerial->appendChild($serialNumberNode);
+
+        // Armar Certificado
+        $cert->appendChild($certDigest);
+        $cert->appendChild($issuerSerial);
+        $signingCert->appendChild($cert);
+
+        // Juntar propiedades de firma
+        $sigSigProps->appendChild($signingTimeNode);
+        $sigSigProps->appendChild($signingCert);
+
+        // <etsi:SignedDataObjectProperties>
+        $signedDataObjectProps = $doc->createElementNS($XADES, 'etsi:SignedDataObjectProperties');
+        $dataObjectFormat = $doc->createElementNS($XADES, 'etsi:DataObjectFormat');
+        $dataObjectFormat->setAttribute('ObjectReference', '#' . $referenceId);
+
+        $description = $doc->createElementNS($XADES, 'etsi:Description', 'compel');
+        $mimeType = $doc->createElementNS($XADES, 'etsi:MimeType', 'text/xml');
+
+        $dataObjectFormat->appendChild($description);
+        $dataObjectFormat->appendChild($mimeType);
+        $signedDataObjectProps->appendChild($dataObjectFormat);
+
+        // Armar SignedProperties
+        $signedProps->appendChild($sigSigProps);
+        $signedProps->appendChild($signedDataObjectProps);
+
+        // Armar QualifyingProperties
+        $qualProps->appendChild($signedProps);
+
+        // Agregar a Object
+        $objectNode->appendChild($qualProps);
+
+        return $objectNode;
+    }
 }
