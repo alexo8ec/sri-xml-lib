@@ -35,4 +35,30 @@ class SriClient
             return "Error: " . $e->getMessage();
         }
     }
+    public function autorizarDoc($clave, $ambiente)
+    {
+        $url = "";
+        switch ($ambiente) {
+            case 1:
+                $url = 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline?wsdl';
+                break;
+            case 2:
+                $url = 'https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline?wsdl';
+                break;
+        }
+        $options = [
+            'trace' => 1,
+            'exceptions' => true,
+            'cache_wsdl' => WSDL_CACHE_NONE,
+            'connection_timeout' => 60, // Aumenta el tiempo de espera
+            'stream_context' => stream_context_create([
+                'http' => ['timeout' => 60] // También en el contexto de la petición
+            ])
+        ];
+
+        $params = array("claveAccesoComprobante" => $clave);
+        $client = new SoapClient($url, $options);
+        $result = $client->autorizacionComprobante($params);
+        return $result;
+    }
 }
