@@ -218,21 +218,19 @@ XML;
             $fechaFirma
         );
 
-        // Crear manualmente el ds:Object como XML plano sin namespace extra
+        // Exportar QualifyingProperties a string
         $qualPropsXml = $objDSig->saveXML($qualProps);
-        echo 2;exit;
 
-        $objectXml = <<<XML
-        <ds:Object Id="$idObject" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-        $qualPropsXml
-        </ds:Object>
-        XML;
+        // Construir todo el nodo Object como string XML
+        $objectXmlString = '<ds:Object Id="' . $idObject . '" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">' . $qualPropsXml . '</ds:Object>';
 
-        $tempDOMObject = new DOMDocument();
-        $tempDOMObject->loadXML($objectXml);
-        $finalObject = $objDSig->importNode($tempDOMObject->documentElement, true);
+        // Cargar ese string manualmente para evitar que DOMDocument altere el namespace
+        $domObjectFinal = new DOMDocument();
+        $domObjectFinal->loadXML($objectXmlString);
 
-        $signatureNode->appendChild($finalObject);
+        // Importar el nodo final y adjuntarlo a la firma
+        $finalObjectNode = $objDSig->importNode($domObjectFinal->documentElement, true);
+        $signatureNode->appendChild($finalObjectNode);
 
         // Insertar Signature en el XML original
         $signatureImportada = $doc->importNode($signatureNode, true);
