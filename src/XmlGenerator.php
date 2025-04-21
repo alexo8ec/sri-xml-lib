@@ -2,16 +2,230 @@
 
 namespace SRI;
 
+use DOMDocument;
 use SimpleXMLElement;
 
 class XmlGenerator
 {
     private $xml;
+    private $conn;
 
     public function __construct()
     {
-        $this->xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><factura id="comprobante" version="1.1.0"></factura>');
+        $conn = new Conexion(
+            'factural_F4ctur4lg0',
+            'h(wa*c~6X5N,',
+            'factural_f4ctvr4l60',
+            '192.250.227.131'
+        );
+        $this->conn = $conn;
     }
+    public function generarNotaCreditoXml($datos)
+    {
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<notaCredito xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="file:/C:/borrar/xsd/11-xsd-3_V1.1.0.xsd"
+             id="comprobante" version="1.1.0">
+</notaCredito>
+XML;
+
+        $notaCredito = new SimpleXMLElement($xml);
+
+
+        // infoTributaria
+        $infoTributaria = $notaCredito->addChild('infoTributaria');
+        $infoTributaria->addChild('ambiente', $datos['infoTributaria']['ambiente']);
+        $infoTributaria->addChild('tipoEmision', $datos['infoTributaria']['tipoEmision']);
+        $infoTributaria->addChild('razonSocial', $datos['infoTributaria']['razonSocial']);
+        $infoTributaria->addChild('nombreComercial', $datos['infoTributaria']['nombreComercial']);
+        $infoTributaria->addChild('ruc', $datos['infoTributaria']['ruc']);
+        $infoTributaria->addChild('claveAcceso', $datos['infoTributaria']['claveAcceso']);
+        $infoTributaria->addChild('codDoc', $datos['infoTributaria']['codDoc']);
+        $infoTributaria->addChild('estab', $datos['infoTributaria']['estab']);
+        $infoTributaria->addChild('ptoEmi', $datos['infoTributaria']['ptoEmi']);
+        $infoTributaria->addChild('secuencial', $datos['infoTributaria']['secuencial']);
+        $infoTributaria->addChild('dirMatriz', $datos['infoTributaria']['dirMatriz']);
+
+        // infoNotaCredito
+        $infoNotaCredito = $notaCredito->addChild('infoNotaCredito');
+        $infoNotaCredito->addChild('fechaEmision', $datos['infoNotaCredito']['fechaEmision']);
+        $infoNotaCredito->addChild('dirEstablecimiento', $datos['infoNotaCredito']['dirEstablecimiento']);
+        $infoNotaCredito->addChild('tipoIdentificacionComprador', $datos['infoNotaCredito']['tipoIdentificacionComprador']);
+        $infoNotaCredito->addChild('razonSocialComprador', $datos['infoNotaCredito']['razonSocialComprador']);
+        $infoNotaCredito->addChild('identificacionComprador', $datos['infoNotaCredito']['identificacionComprador']);
+        $infoNotaCredito->addChild('obligadoContabilidad', $datos['infoNotaCredito']['obligadoContabilidad']);
+        $infoNotaCredito->addChild('codDocModificado', $datos['infoNotaCredito']['codDocModificado']);
+        $infoNotaCredito->addChild('numDocModificado', $datos['infoNotaCredito']['numDocModificado']);
+        $infoNotaCredito->addChild('fechaEmisionDocSustento', $datos['infoNotaCredito']['fechaEmisionDocSustento']);
+        $infoNotaCredito->addChild('totalSinImpuestos', number_format($datos['infoNotaCredito']['totalSinImpuestos'], 2, '.', ''));
+        $infoNotaCredito->addChild('valorModificacion', number_format($datos['infoNotaCredito']['valorModificacion'], 2, '.', ''));
+        $infoNotaCredito->addChild('moneda', $datos['infoNotaCredito']['moneda']);
+
+        $totalConImpuestos = $infoNotaCredito->addChild('totalConImpuestos');
+        foreach ($datos['infoNotaCredito']['totalConImpuestos'] as $impuesto) {
+            $totalImpuesto = $totalConImpuestos->addChild('totalImpuesto');
+            $totalImpuesto->addChild('codigo', $impuesto['codigo']);
+            $totalImpuesto->addChild('codigoPorcentaje', $impuesto['codigoPorcentaje']);
+            $totalImpuesto->addChild('baseImponible', number_format($impuesto['baseImponible'], 2, '.', ''));
+            $totalImpuesto->addChild('valor', number_format($impuesto['valor'], 2, '.', ''));
+        }
+
+        $infoNotaCredito->addChild('motivo', $datos['infoNotaCredito']['motivo']);
+
+        // detalles
+        $detalles = $notaCredito->addChild('detalles');
+        foreach ($datos['detalles'] as $detalle) {
+            $detalleNode = $detalles->addChild('detalle');
+            $detalleNode->addChild('codigoInterno', $detalle['codigoInterno']);
+            $detalleNode->addChild('descripcion', $detalle['descripcion']);
+            $detalleNode->addChild('cantidad', number_format($detalle['cantidad'], 6, '.', ''));
+            $detalleNode->addChild('precioUnitario', number_format($detalle['precioUnitario'], 6, '.', ''));
+            $detalleNode->addChild('descuento', number_format($detalle['descuento'], 2, '.', ''));
+            $detalleNode->addChild('precioTotalSinImpuesto', number_format($detalle['precioTotalSinImpuesto'], 2, '.', ''));
+
+            $impuestos = $detalleNode->addChild('impuestos');
+            foreach ($detalle['impuestos'] as $impuesto) {
+                $impuestoNode = $impuestos->addChild('impuesto');
+                $impuestoNode->addChild('codigo', $impuesto['codigo']);
+                $impuestoNode->addChild('codigoPorcentaje', $impuesto['codigoPorcentaje']);
+                $impuestoNode->addChild('tarifa', number_format($impuesto['tarifa'], 2, '.', ''));
+                $impuestoNode->addChild('baseImponible', number_format($impuesto['baseImponible'], 2, '.', ''));
+                $impuestoNode->addChild('valor', number_format($impuesto['valor'], 2, '.', ''));
+            }
+        }
+
+        // infoAdicional
+        if (!empty($datos['infoAdicional'])) {
+            $infoAdicional = $notaCredito->addChild('infoAdicional');
+            foreach ($datos['infoAdicional'] as $campo) {
+                $campoAdicional = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
+                $campoAdicional->addAttribute('nombre', $campo['nombre']);
+            }
+        }
+
+        $xmlString = $notaCredito->asXML();
+
+        $xmlFormateado = $this->formatXml($xmlString);
+
+        return $xmlFormateado;
+    }
+    private function formatXml($xmlString)
+    {
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->loadXML($xmlString);
+
+        return $dom->saveXML();
+    }
+    public function calcularTotalConImpuestos($items)
+    {
+        $totalConImpuestos = [];
+        $resumen = [];
+
+        foreach ($items as $item) {
+
+            $idIva = $this->conn->consultarUno("SELECT * FROM sri_tipo_impuesto WHERE sri_tipo_impuesto_id = ? LIMIT 1", [$item['sri_tipo_impuesto_iva_id']]);
+            $codigoPorcentaje = $idIva['codigo'];
+            $porcentajeIva = $idIva['porcentaje'];
+            $codigoImpuesto = $idIva['codigo_impuesto'];
+
+            if (!isset($resumen[$codigoPorcentaje])) {
+                $resumen[$codigoPorcentaje] = [
+                    'codigo' => $codigoImpuesto,
+                    'codigoPorcentaje' => $codigoPorcentaje,
+                    'baseImponible' => 0,
+                    'valor' => 0,
+                    'porcentajeIva' => $porcentajeIva,
+                ];
+            }
+            $resumen[$codigoPorcentaje]['baseImponible'] += $item['subtotal'];
+
+            if ($porcentajeIva > 0) {
+                $resumen[$codigoPorcentaje]['valor'] += ($item['subtotal'] * $porcentajeIva / 100);
+            }
+        }
+        // Ahora formateamos el resultado para totalConImpuestos
+        foreach ($resumen as $r) {
+            $totalConImpuestos[] = [
+                'codigo' => $r['codigo'],
+                'codigoPorcentaje' => $r['codigoPorcentaje'],
+                'baseImponible' => round($r['baseImponible'], 2),
+                'valor' => round($r['valor'], 2),
+            ];
+        }
+        return $totalConImpuestos;
+    }
+    public function generarDetalles($items)
+    {
+        $detalles = [];
+
+        foreach ($items as $item) {
+
+            $detalle = [
+                'codigoInterno' => $item['cod_producto'],
+                'codigoAdicional' => $item['cod_producto'],
+                'descripcion' => $item['descripcion'],
+                'cantidad' => number_format($item['cantidad'], 6, '.', ''), // 6 decimales
+                'precioUnitario' => number_format($item['precio'], 6, '.', ''),
+                'descuento' => number_format($item['descuento'], 2, '.', ''),
+                'precioTotalSinImpuesto' => number_format($item['subtotal'], 2, '.', ''),
+                'impuestos' => [],
+            ];
+
+            $idIva = $this->conn->consultarUno("SELECT * FROM sri_tipo_impuesto WHERE sri_tipo_impuesto_id = ? LIMIT 1", [$item['sri_tipo_impuesto_iva_id']]);
+
+            $valorIva = 0;
+
+            if ($idIva['porcentaje'] > 0) {
+                $valorIva = $item['subtotal'] * $idIva['porcentaje'] / 100;
+            }
+
+            $detalle['impuestos'][] = [
+                'codigo' => $idIva['codigo_impuesto'],
+                'codigoPorcentaje' => $idIva['codigo'],
+                'tarifa' => number_format($idIva['porcentaje'], 2, '.', ''),
+                'baseImponible' => number_format($item['subtotal'], 2, '.', ''),
+                'valor' => number_format($valorIva, 2, '.', ''),
+            ];
+
+            $detalles[] = $detalle;
+        }
+
+        return $detalles;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function setInfoTributaria($data)
     {
@@ -28,7 +242,6 @@ class XmlGenerator
         $infoTributaria->addChild('secuencial', $data['secuencial']);
         $infoTributaria->addChild('dirMatriz', htmlspecialchars($data['dirMatriz']));
     }
-
     public function setInfoFactura($data)
     {
         $infoFactura = $this->xml->addChild('infoFactura');
@@ -61,7 +274,6 @@ class XmlGenerator
             }
         }
     }
-
     public function addDetalles($detallesArray)
     {
         $detalles = $this->xml->addChild('detalles');
@@ -82,7 +294,6 @@ class XmlGenerator
             }
         }
     }
-
     public function addInfoAdicional($campos)
     {
         $infoAdicional = $this->xml->addChild('infoAdicional');
@@ -91,7 +302,6 @@ class XmlGenerator
             $campoAdicional->addAttribute('nombre', $nombre);
         }
     }
-
     public function getXml()
     {
         return $this->xml->asXML();
