@@ -12,7 +12,10 @@ class FirmaElectronica
 
     public function __construct(string $rutaCertificado, string $claveCertificado)
     {
-        $this->rutaJar = 'CompelJar/dist/CompelJar.jar';
+        $this->rutaJar = 'src/CompelJar/dist/CompelJar.jar';
+        //$this->rutaJar = __DIR__ . '/../CompelJar/dist/CompelJar.jar';
+        //$this->rutaJar = realpath(__DIR__ . '/../CompelJar/dist/CompelJar.jar');
+
         $this->rutaCertificado = $rutaCertificado;
         $this->claveCertificado = $claveCertificado;
     }
@@ -32,14 +35,9 @@ class FirmaElectronica
             escapeshellarg($xmlPathOrigen),
             escapeshellarg(1) // Aquí siempre 1
         );
+        $comando .= ' 2>&1';
 
         exec($comando, $output, $returnVar);
-
-        echo '<pre>';
-        print_r($comando);
-        print_r($output);
-        print_r($returnVar);
-        exit;
 
         // 3. Leer el XML firmado
         if ($returnVar === 0) {
