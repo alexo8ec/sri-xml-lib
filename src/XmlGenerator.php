@@ -24,36 +24,55 @@ XML;
 
         // infoTributaria
         $infoTributaria = $factura->addChild('infoTributaria');
-        foreach ($datos['infoTributaria'] as $campo => $valor) {
-            $infoTributaria->addChild($campo, $valor);
-        }
+        $infoTributaria->addChild('ambiente', $datos['infoTributaria']['ambiente']);
+        $infoTributaria->addChild('tipoEmision', $datos['infoTributaria']['tipoEmision']);
+        $infoTributaria->addChild('razonSocial', $datos['infoTributaria']['razonSocial']);
+        $infoTributaria->addChild('nombreComercial', $datos['infoTributaria']['nombreComercial']);
+        $infoTributaria->addChild('ruc', $datos['infoTributaria']['ruc']);
+        $infoTributaria->addChild('claveAcceso', $datos['infoTributaria']['claveAcceso']);
+        $infoTributaria->addChild('codDoc', $datos['infoTributaria']['codDoc']);
+        $infoTributaria->addChild('estab', $datos['infoTributaria']['estab']);
+        $infoTributaria->addChild('ptoEmi', $datos['infoTributaria']['ptoEmi']);
+        $infoTributaria->addChild('secuencial', $datos['infoTributaria']['secuencial']);
+        $infoTributaria->addChild('dirMatriz', $datos['infoTributaria']['dirMatriz']);
 
         // infoFactura
         $infoFactura = $factura->addChild('infoFactura');
-        foreach ($datos['infoFactura'] as $clave => $valor) {
-            if (is_array($valor)) continue; // para evitar nodos duplicados (ej: totalConImpuestos)
-            $infoFactura->addChild($clave, $valor);
-        }
+        $infoFactura->addChild('fechaEmision', $datos['infoFactura']['fechaEmision']);
+        $infoFactura->addChild('dirEstablecimiento', $datos['infoFactura']['dirEstablecimiento']);
+        $infoFactura->addChild('obligadoContabilidad', $datos['infoFactura']['obligadoContabilidad']);
+        $infoFactura->addChild('tipoIdentificacionComprador', $datos['infoFactura']['tipoIdentificacionComprador']);
+        $infoFactura->addChild('razonSocialComprador', $datos['infoFactura']['razonSocialComprador']);
+        $infoFactura->addChild('identificacionComprador', $datos['infoFactura']['identificacionComprador']);
+        $infoFactura->addChild('direccionComprador', $datos['infoFactura']['direccionComprador']);
+        $infoFactura->addChild('totalSinImpuestos', number_format($datos['infoFactura']['totalSinImpuestos'], 2, '.', ''));
+        $infoFactura->addChild('totalDescuento', number_format($datos['infoFactura']['totalDescuento'], 2, '.', ''));
 
         // totalConImpuestos
-        if (!empty($datos['infoFactura']['totalConImpuestos'])) {
-            $totalConImpuestos = $infoFactura->addChild('totalConImpuestos');
-            foreach ($datos['infoFactura']['totalConImpuestos'] as $impuesto) {
-                $totalImpuesto = $totalConImpuestos->addChild('totalImpuesto');
-                foreach ($impuesto as $k => $v) {
-                    $totalImpuesto->addChild($k, $v);
-                }
-            }
+        $totalConImpuestos = $infoFactura->addChild('totalConImpuestos');
+        foreach ($datos['infoFactura']['totalConImpuestos'] as $impuesto) {
+            $totalImpuesto = $totalConImpuestos->addChild('totalImpuesto');
+            $totalImpuesto->addChild('codigo', $impuesto['codigo']);
+            $totalImpuesto->addChild('codigoPorcentaje', $impuesto['codigoPorcentaje']);
+            $totalImpuesto->addChild('baseImponible', number_format($impuesto['baseImponible'], 2, '.', ''));
+            $totalImpuesto->addChild('valor', number_format($impuesto['valor'], 2, '.', ''));
         }
 
+        $infoFactura->addChild('propina', number_format($datos['infoFactura']['propina'], 2, '.', ''));
+        $infoFactura->addChild('importeTotal', number_format($datos['infoFactura']['importeTotal'], 2, '.', ''));
+        $infoFactura->addChild('moneda', $datos['infoFactura']['moneda']);
+
         // pagos
-        if (!empty($datos['infoFactura']['pagos'])) {
-            $pagos = $infoFactura->addChild('pagos');
-            foreach ($datos['infoFactura']['pagos'] as $pago) {
-                $pagoNode = $pagos->addChild('pago');
-                foreach ($pago as $k => $v) {
-                    $pagoNode->addChild($k, $v);
-                }
+        $pagos = $infoFactura->addChild('pagos');
+        foreach ($datos['infoFactura']['pagos'] as $pago) {
+            $pagoNode = $pagos->addChild('pago');
+            $pagoNode->addChild('formaPago', $pago['formaPago']);
+            $pagoNode->addChild('total', number_format($pago['total'], 2, '.', ''));
+            if (!empty($pago['plazo'])) {
+                $pagoNode->addChild('plazo', $pago['plazo']);
+            }
+            if (!empty($pago['unidadTiempo'])) {
+                $pagoNode->addChild('unidadTiempo', $pago['unidadTiempo']);
             }
         }
 
@@ -61,10 +80,12 @@ XML;
         $detalles = $factura->addChild('detalles');
         foreach ($datos['detalles'] as $detalle) {
             $detalleNode = $detalles->addChild('detalle');
-            foreach ($detalle as $clave => $valor) {
-                if (in_array($clave, ['detallesAdicionales', 'impuestos'])) continue;
-                $detalleNode->addChild($clave, $valor);
-            }
+            $detalleNode->addChild('codigoPrincipal', $detalle['codigoPrincipal']);
+            $detalleNode->addChild('descripcion', $detalle['descripcion']);
+            $detalleNode->addChild('cantidad', number_format($detalle['cantidad'], 6, '.', ''));
+            $detalleNode->addChild('precioUnitario', number_format($detalle['precioUnitario'], 6, '.', ''));
+            $detalleNode->addChild('descuento', number_format($detalle['descuento'], 2, '.', ''));
+            $detalleNode->addChild('precioTotalSinImpuesto', number_format($detalle['precioTotalSinImpuesto'], 2, '.', ''));
 
             if (!empty($detalle['detallesAdicionales'])) {
                 $detAdicionales = $detalleNode->addChild('detallesAdicionales');
@@ -75,14 +96,14 @@ XML;
                 }
             }
 
-            if (!empty($detalle['impuestos'])) {
-                $impuestos = $detalleNode->addChild('impuestos');
-                foreach ($detalle['impuestos'] as $imp) {
-                    $impuesto = $impuestos->addChild('impuesto');
-                    foreach ($imp as $k => $v) {
-                        $impuesto->addChild($k, $v);
-                    }
-                }
+            $impuestos = $detalleNode->addChild('impuestos');
+            foreach ($detalle['impuestos'] as $imp) {
+                $impuesto = $impuestos->addChild('impuesto');
+                $impuesto->addChild('codigo', $imp['codigo']);
+                $impuesto->addChild('codigoPorcentaje', $imp['codigoPorcentaje']);
+                $impuesto->addChild('tarifa', number_format($imp['tarifa'], 2, '.', ''));
+                $impuesto->addChild('baseImponible', number_format($imp['baseImponible'], 2, '.', ''));
+                $impuesto->addChild('valor', number_format($imp['valor'], 2, '.', ''));
             }
         }
 
@@ -90,8 +111,10 @@ XML;
         if (!empty($datos['infoAdicional'])) {
             $infoAdicional = $factura->addChild('infoAdicional');
             foreach ($datos['infoAdicional'] as $campo) {
-                $campoNode = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
-                $campoNode->addAttribute('nombre', $campo['nombre']);
+                if (!empty(trim($campo['valor']))) {
+                    $campoNode = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
+                    $campoNode->addAttribute('nombre', $campo['nombre']);
+                }
             }
         }
 
