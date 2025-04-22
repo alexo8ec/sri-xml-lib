@@ -9,6 +9,94 @@ class XmlGenerator
 {
     private $xml;
     public function __construct() {}
+    public function generarFacturaXml($datos)
+    {
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<factura xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="file:/C:/borrar/xsd/111-xsd-1_V2.1.0.xsd"
+         id="comprobante" version="2.1.0">
+</factura>
+XML;
+
+        $factura = new \SimpleXMLElement($xml);
+
+        // infoTributaria
+        $infoTributaria = $factura->addChild('infoTributaria');
+        foreach ($datos['infoTributaria'] as $campo => $valor) {
+            $infoTributaria->addChild($campo, $valor);
+        }
+
+        // infoFactura
+        $infoFactura = $factura->addChild('infoFactura');
+        foreach ($datos['infoFactura'] as $clave => $valor) {
+            if (is_array($valor)) continue; // para evitar nodos duplicados (ej: totalConImpuestos)
+            $infoFactura->addChild($clave, $valor);
+        }
+
+        // totalConImpuestos
+        if (!empty($datos['infoFactura']['totalConImpuestos'])) {
+            $totalConImpuestos = $infoFactura->addChild('totalConImpuestos');
+            foreach ($datos['infoFactura']['totalConImpuestos'] as $impuesto) {
+                $totalImpuesto = $totalConImpuestos->addChild('totalImpuesto');
+                foreach ($impuesto as $k => $v) {
+                    $totalImpuesto->addChild($k, $v);
+                }
+            }
+        }
+
+        // pagos
+        if (!empty($datos['infoFactura']['pagos'])) {
+            $pagos = $infoFactura->addChild('pagos');
+            foreach ($datos['infoFactura']['pagos'] as $pago) {
+                $pagoNode = $pagos->addChild('pago');
+                foreach ($pago as $k => $v) {
+                    $pagoNode->addChild($k, $v);
+                }
+            }
+        }
+
+        // detalles
+        $detalles = $factura->addChild('detalles');
+        foreach ($datos['detalles'] as $detalle) {
+            $detalleNode = $detalles->addChild('detalle');
+            foreach ($detalle as $clave => $valor) {
+                if (in_array($clave, ['detallesAdicionales', 'impuestos'])) continue;
+                $detalleNode->addChild($clave, $valor);
+            }
+
+            if (!empty($detalle['detallesAdicionales'])) {
+                $detAdicionales = $detalleNode->addChild('detallesAdicionales');
+                foreach ($detalle['detallesAdicionales'] as $adicional) {
+                    $ad = $detAdicionales->addChild('detAdicional');
+                    $ad->addAttribute('nombre', $adicional['nombre']);
+                    $ad->addAttribute('valor', $adicional['valor']);
+                }
+            }
+
+            if (!empty($detalle['impuestos'])) {
+                $impuestos = $detalleNode->addChild('impuestos');
+                foreach ($detalle['impuestos'] as $imp) {
+                    $impuesto = $impuestos->addChild('impuesto');
+                    foreach ($imp as $k => $v) {
+                        $impuesto->addChild($k, $v);
+                    }
+                }
+            }
+        }
+
+        // infoAdicional
+        if (!empty($datos['infoAdicional'])) {
+            $infoAdicional = $factura->addChild('infoAdicional');
+            foreach ($datos['infoAdicional'] as $campo) {
+                $campoNode = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
+                $campoNode->addAttribute('nombre', $campo['nombre']);
+            }
+        }
+
+        return $factura->asXML();
+    }
     public function generarNotaCreditoXml($datos)
     {
         $xml = <<<XML
