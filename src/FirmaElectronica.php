@@ -23,28 +23,21 @@ class FirmaElectronica
         if (!file_exists($xmlPathOrigen)) {
             return ['success' => false, 'mensaje' => 'XML de origen no existe.'];
         }
-
         $comando = sprintf(
             'java -jar %s %s %s %s %s',
             escapeshellarg($this->rutaJar),
             escapeshellarg($this->rutaCertificado),
             escapeshellarg($this->claveCertificado),
             escapeshellarg($xmlPathOrigen),
-            escapeshellarg(1) // Aquí siempre 1
+            escapeshellarg(1)
         );
         $comando .= ' 2>&1';
-
         exec($comando, $output, $returnVar);
-
-        // 3. Leer el XML firmado
         if ($returnVar === 0) {
             $xmlFirmado = file_get_contents($xmlPathOrigen);
-
             if (strpos($xmlFirmado, '<ds:Signature>') !== false) {
-                // ¡XML firmado exitosamente!
             }
         }
-
         if (!file_exists($xmlPathOrigen)) {
             return ['success' => false, 'mensaje' => 'No se generó XML firmado.'];
         }
