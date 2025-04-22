@@ -39,10 +39,10 @@ class FirmaElectronica
             }
         }
         if (!file_exists($xmlPathOrigen)) {
-            return ['success' => false, 'mensaje' => 'No se generó XML firmado.'];
+            return ['status' => 'error', 'mensaje' => 'No se generó XML firmado.'];
         }
         return [
-            'success' => true,
+            'status' => 'success',
             'code' => 200,
             'message' => 'XML firmado exitosamente.',
             'data' => [
