@@ -8,18 +8,7 @@ use SimpleXMLElement;
 class XmlGenerator
 {
     private $xml;
-    private $conn;
-
-    public function __construct()
-    {
-        $conn = new Conexion(
-            'factural_F4ctur4lg0',
-            'h(wa*c~6X5N,',
-            'factural_f4ctvr4l60',
-            '192.250.227.131'
-        );
-        $this->conn = $conn;
-    }
+    public function __construct() {}
     public function generarNotaCreditoXml($datos)
     {
         $xml = <<<XML
