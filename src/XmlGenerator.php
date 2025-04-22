@@ -74,6 +74,14 @@ XML;
             $detalleNode->addChild('descuento', number_format($detalle['descuento'], 2, '.', ''));
             $detalleNode->addChild('precioTotalSinImpuesto', number_format($detalle['precioTotalSinImpuesto'], 2, '.', ''));
 
+            if (!empty($detalle['detallesAdicionales'])) {
+                $detallesAdicionales = $detalleNode->addChild('detallesAdicionales');
+                foreach ($detalle['detallesAdicionales'] as $adicional) {
+                    $detAdicional = $detallesAdicionales->addChild('detAdicional', htmlspecialchars($adicional['valor']));
+                    $detAdicional->addAttribute('nombre', $adicional['nombre']);
+                }
+            }
+
             $impuestos = $detalleNode->addChild('impuestos');
             foreach ($detalle['impuestos'] as $impuesto) {
                 $impuestoNode = $impuestos->addChild('impuesto');
