@@ -30,7 +30,7 @@ function generarXMLNotaCredito($conn)
     join bm_productos as p ON v.id_producto=p.id_producto
     WHERE v.id_empresa = ? AND v.motivo=? AND v.id_venta=?
     GROUP BY v.id_venta",
-        ['41', 'NOTACREDITO', 270414]
+        ['41', 'NOTACREDITO', 266937]
     );
 
     if (count($notasCredito) > 0) {

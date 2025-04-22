@@ -52,12 +52,13 @@ function firmarXMLNotaCredito($conn)
                         'estado' => 'FIRMADO',
                         'fecha_firma' => date('Y-m-d H:i:s')
                     ];
-                    $sql = "UPDATE bm_estado_archivos SET archivo_firmado = ?, estado_firma = ?, fecha_firmado = ? WHERE id_empresa = ?;";
+                    $sql = "UPDATE bm_estado_archivos SET archivo_firmado = ?, estado_firma = ?, fecha_firmado = ? WHERE id_empresa = ? AND id_estado = ? ;";
                     $parametros = [
                         $comprobanteFirmado['comprobante'],
                         'T',
                         date('Y-m-d H:i:s'),
-                        $row['id_empresa']
+                        $row['id_empresa'],
+                        $row['id_estado']
                     ];
                     $conn->ejecutar($sql, $parametros);
                     unlink($resultadoFirma['data']['xmlOrigen']);
