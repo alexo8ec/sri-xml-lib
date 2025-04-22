@@ -12,10 +12,7 @@ class FirmaElectronica
 
     public function __construct(string $rutaCertificado, string $claveCertificado)
     {
-        $this->rutaJar = 'src/CompelJar/dist/CompelJar.jar';
-        //$this->rutaJar = __DIR__ . '/../CompelJar/dist/CompelJar.jar';
-        //$this->rutaJar = realpath(__DIR__ . '/../CompelJar/dist/CompelJar.jar');
-
+        $this->rutaJar = __DIR__ . '/CompelJar/dist/CompelJar.jar';
         $this->rutaCertificado = $rutaCertificado;
         $this->claveCertificado = $claveCertificado;
     }
