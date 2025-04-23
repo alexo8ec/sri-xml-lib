@@ -36,9 +36,16 @@ XML;
         $infoTributaria->addChild('secuencial', $datos['infoTributaria']['secuencial']);
         $infoTributaria->addChild('dirMatriz', $datos['infoTributaria']['dirMatriz']);
 
+        if (!empty($datos['infoTributaria']['agenteRetencion'])) {
+            $infoTributaria->addChild('agenteRetencion', $datos['infoTributaria']['agenteRetencion']);
+        }
+
         // infoFactura
         $infoFactura = $factura->addChild('infoFactura');
         $infoFactura->addChild('fechaEmision', $datos['infoFactura']['fechaEmision']);
+        if (!empty($datos['infoTributaria']['contribuyenteEspecial'])) {
+            $infoTributaria->addChild('contribuyenteEspecial', $datos['infoTributaria']['contribuyenteEspecial']);
+        }
         $infoFactura->addChild('dirEstablecimiento', $datos['infoFactura']['dirEstablecimiento']);
         $infoFactura->addChild('obligadoContabilidad', $datos['infoFactura']['obligadoContabilidad']);
         $infoFactura->addChild('tipoIdentificacionComprador', $datos['infoFactura']['tipoIdentificacionComprador']);
