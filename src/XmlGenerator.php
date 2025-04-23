@@ -127,7 +127,11 @@ XML;
             }
         }
 
-        return $factura->asXML();
+        $xmlString = $factura->asXML();
+
+        $xmlFormateado = $this->formatXml($xmlString);
+
+        return $xmlFormateado;
     }
     public function generarNotaCreditoXml($datos)
     {
