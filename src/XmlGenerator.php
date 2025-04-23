@@ -70,6 +70,8 @@ XML;
             $pagoNode->addChild('total', number_format($pago['total'], 2, '.', ''));
             if (!empty($pago['plazo'])) {
                 $pagoNode->addChild('plazo', $pago['plazo']);
+            } else {
+                $pagoNode->addChild('plazo', 0);
             }
             if (!empty($pago['unidadTiempo'])) {
                 $pagoNode->addChild('unidadTiempo', $pago['unidadTiempo']);
