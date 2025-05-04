@@ -9,6 +9,79 @@ class XmlGenerator
 {
     private $xml;
     public function __construct() {}
+    public function generarRetencionXml($datos)
+    {
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<comprobanteRetencion xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xsi:noNamespaceSchemaLocation="file:/C:/xsd/comprobanteRetencion_2.0.0.xsd"
+                      id="comprobante" version="2.0.0">
+</comprobanteRetencion>
+XML;
+
+        $retencion = new \SimpleXMLElement($xml);
+
+        // infoTributaria
+        $infoTributaria = $retencion->addChild('infoTributaria');
+        $infoTributaria->addChild('ambiente', $datos['infoTributaria']['ambiente']);
+        $infoTributaria->addChild('tipoEmision', $datos['infoTributaria']['tipoEmision']);
+        $infoTributaria->addChild('razonSocial', $datos['infoTributaria']['razonSocial']);
+        $infoTributaria->addChild('nombreComercial', $datos['infoTributaria']['nombreComercial']);
+        $infoTributaria->addChild('ruc', $datos['infoTributaria']['ruc']);
+        $infoTributaria->addChild('claveAcceso', $datos['infoTributaria']['claveAcceso']);
+        $infoTributaria->addChild('codDoc', $datos['infoTributaria']['codDoc']);
+        $infoTributaria->addChild('estab', $datos['infoTributaria']['estab']);
+        $infoTributaria->addChild('ptoEmi', $datos['infoTributaria']['ptoEmi']);
+        $infoTributaria->addChild('secuencial', $datos['infoTributaria']['secuencial']);
+        $infoTributaria->addChild('dirMatriz', $datos['infoTributaria']['dirMatriz']);
+        $infoTributaria->addChild('agenteRetencion', $datos['infoTributaria']['agenteRetencion']);
+        $infoTributaria->addChild('contribuyenteRimpe', $datos['infoTributaria']['contribuyenteRimpe']);
+
+        // infoCompRetencion
+        $infoCompRetencion = $retencion->addChild('infoCompRetencion');
+        $infoCompRetencion->addChild('fechaEmision', $datos['infoCompRetencion']['fechaEmision']);
+        $infoCompRetencion->addChild('dirEstablecimiento', $datos['infoCompRetencion']['dirEstablecimiento']);
+
+        if (!empty($datos['infoTributaria']['contribuyenteEspecial'])) {
+            $infoTributaria->addChild('contribuyenteEspecial', $datos['infoTributaria']['contribuyenteEspecial']);
+        }
+        $infoCompRetencion->addChild('obligadoContabilidad', $datos['infoCompRetencion']['obligadoContabilidad']);
+        $infoCompRetencion->addChild('tipoIdentificacionSujetoRetenido', $datos['infoCompRetencion']['tipoIdentificacionSujetoRetenido']);
+        $infoCompRetencion->addChild('tipoSujetoRetenido', $datos['infoCompRetencion']['tipoSujetoRetenido']);
+        $infoCompRetencion->addChild('identificacionComprador', $datos['infoCompRetencion']['identificacionComprador']);
+        $infoCompRetencion->addChild('parteRel', $datos['infoCompRetencion']['parteRel']);
+        $infoCompRetencion->addChild('razonSocialSujetoRetenido', $datos['infoCompRetencion']['razonSocialSujetoRetenido']);
+        $infoCompRetencion->addChild('identificacionSujetoRetenido', $datos['infoCompRetencion']['identificacionSujetoRetenido']);
+
+        // impuestos
+        $impuestos = $retencion->addChild('impuestos');
+        foreach ($datos['impuestos'] as $imp) {
+            $impuesto = $impuestos->addChild('impuesto');
+            $impuesto->addChild('codigo', $imp['codigo']);
+            $impuesto->addChild('codigoRetencion', $imp['codigoRetencion']);
+            $impuesto->addChild('baseImponible', number_format($imp['baseImponible'], 2, '.', ''));
+            $impuesto->addChild('porcentajeRetener', number_format($imp['porcentajeRetener'], 2, '.', ''));
+            $impuesto->addChild('valorRetenido', number_format($imp['valorRetenido'], 2, '.', ''));
+            $impuesto->addChild('codDocSustento', $imp['codDocSustento']);
+            $impuesto->addChild('numDocSustento', $imp['numDocSustento']);
+            $impuesto->addChild('fechaEmisionDocSustento', $imp['fechaEmisionDocSustento']);
+        }
+
+        // infoAdicional
+        if (!empty($datos['infoAdicional'])) {
+            $infoAdicional = $retencion->addChild('infoAdicional');
+            foreach ($datos['infoAdicional'] as $campo) {
+                if (!empty(trim($campo['valor']))) {
+                    $campoNode = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
+                    $campoNode->addAttribute('nombre', $campo['nombre']);
+                }
+            }
+        }
+
+        $xmlString = $retencion->asXML();
+        return $this->formatXml($xmlString);
+    }
     public function generarFacturaXml($datos)
     {
         $xml = <<<XML
