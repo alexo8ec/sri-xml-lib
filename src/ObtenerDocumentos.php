@@ -2,16 +2,14 @@
 
 namespace SRI;
 
-use DOMDocument;
-use SimpleXMLElement;
 use SoapClient;
 
 class ObtenerDocumentos
 {
-    private $xml;
     public function __construct() {}
     public function obtenerDocumentoSRI($r)
     {
+        $arrayRespuesta = [];
         try {
             $clave = $r->clave_acceso;
             $context = stream_context_create([
@@ -26,9 +24,21 @@ class ObtenerDocumentos
             $parametros['claveAccesoComprobante'] = $clave;
             $client = new SoapClient($servicio, ['stream_context' => $context]);
             $result = $client->autorizacionComprobante($parametros);
-            return $result;
+            $arrayRespuesta = [
+                'status' => 'success',
+                'code' => 200,
+                'message' => 'Documento extraido correctamente',
+                'result' => $result
+            ];
         } catch (\Throwable $e) {
-            return ['error' => $e->getMessage()];
+            $arrayRespuesta = [
+                'status' => 'error',
+                'code' => 500,
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ];
         }
+        return $arrayRespuesta;
     }
 }
