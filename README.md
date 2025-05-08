@@ -33,4 +33,4 @@ Este proyecto permite la **generación, firma y emisión de comprobantes electr�
 1. Clonar el repositorio:
    ```bash
    git clone https://github.com/alexo8ec/sri-xml-lib.git
-   cd facturacion-electronica-sri
+   cd sri-xml-lib
