@@ -3,7 +3,6 @@
 namespace SRI;
 
 use SoapClient;
-
 class ObtenerDocumentos
 {
     public function __construct() {}
