@@ -19,9 +19,7 @@ class XmlGenerator
                       id="comprobante" version="2.0.0">
 </comprobanteRetencion>
 XML;
-
         $retencion = new \SimpleXMLElement($xml);
-
         // infoTributaria
         $infoTributaria = $retencion->addChild('infoTributaria');
         $infoTributaria->addChild('ambiente', $datos['infoTributaria']['ambiente']);
@@ -37,12 +35,10 @@ XML;
         $infoTributaria->addChild('dirMatriz', $datos['infoTributaria']['dirMatriz']);
         $infoTributaria->addChild('agenteRetencion', $datos['infoTributaria']['agenteRetencion']);
         $infoTributaria->addChild('contribuyenteRimpe', $datos['infoTributaria']['contribuyenteRimpe']);
-
         // infoCompRetencion
         $infoCompRetencion = $retencion->addChild('infoCompRetencion');
         $infoCompRetencion->addChild('fechaEmision', $datos['infoCompRetencion']['fechaEmision']);
         $infoCompRetencion->addChild('dirEstablecimiento', $datos['infoCompRetencion']['dirEstablecimiento']);
-
         if (!empty($datos['infoTributaria']['contribuyenteEspecial'])) {
             $infoTributaria->addChild('contribuyenteEspecial', $datos['infoTributaria']['contribuyenteEspecial']);
         }
@@ -53,7 +49,6 @@ XML;
         $infoCompRetencion->addChild('parteRel', $datos['infoCompRetencion']['parteRel']);
         $infoCompRetencion->addChild('razonSocialSujetoRetenido', $datos['infoCompRetencion']['razonSocialSujetoRetenido']);
         $infoCompRetencion->addChild('identificacionSujetoRetenido', $datos['infoCompRetencion']['identificacionSujetoRetenido']);
-
         // impuestos
         $impuestos = $retencion->addChild('impuestos');
         foreach ($datos['impuestos'] as $imp) {
@@ -67,7 +62,6 @@ XML;
             $impuesto->addChild('numDocSustento', $imp['numDocSustento']);
             $impuesto->addChild('fechaEmisionDocSustento', $imp['fechaEmisionDocSustento']);
         }
-
         // infoAdicional
         if (!empty($datos['infoAdicional'])) {
             $infoAdicional = $retencion->addChild('infoAdicional');
@@ -78,7 +72,6 @@ XML;
                 }
             }
         }
-
         $xmlString = $retencion->asXML();
         return $this->formatXml($xmlString);
     }
@@ -92,9 +85,7 @@ XML;
          id="comprobante" version="2.1.0">
 </factura>
 XML;
-
         $factura = new \SimpleXMLElement($xml);
-
         // infoTributaria
         $infoTributaria = $factura->addChild('infoTributaria');
         $infoTributaria->addChild('ambiente', $datos['infoTributaria']['ambiente']);
@@ -108,11 +99,9 @@ XML;
         $infoTributaria->addChild('ptoEmi', $datos['infoTributaria']['ptoEmi']);
         $infoTributaria->addChild('secuencial', $datos['infoTributaria']['secuencial']);
         $infoTributaria->addChild('dirMatriz', $datos['infoTributaria']['dirMatriz']);
-
         if (!empty($datos['infoTributaria']['agenteRetencion'])) {
             $infoTributaria->addChild('agenteRetencion', $datos['infoTributaria']['agenteRetencion']);
         }
-
         // infoFactura
         $infoFactura = $factura->addChild('infoFactura');
         $infoFactura->addChild('fechaEmision', $datos['infoFactura']['fechaEmision']);
@@ -127,7 +116,6 @@ XML;
         $infoFactura->addChild('direccionComprador', $datos['infoFactura']['direccionComprador']);
         $infoFactura->addChild('totalSinImpuestos', number_format($datos['infoFactura']['totalSinImpuestos'], 2, '.', ''));
         $infoFactura->addChild('totalDescuento', number_format($datos['infoFactura']['totalDescuento'], 2, '.', ''));
-
         // totalConImpuestos
         $totalConImpuestos = $infoFactura->addChild('totalConImpuestos');
         foreach ($datos['infoFactura']['totalConImpuestos'] as $impuesto) {
@@ -137,11 +125,9 @@ XML;
             $totalImpuesto->addChild('baseImponible', number_format($impuesto['baseImponible'], 2, '.', ''));
             $totalImpuesto->addChild('valor', number_format($impuesto['valor'], 2, '.', ''));
         }
-
         $infoFactura->addChild('propina', number_format($datos['infoFactura']['propina'], 2, '.', ''));
         $infoFactura->addChild('importeTotal', number_format($datos['infoFactura']['importeTotal'], 2, '.', ''));
         $infoFactura->addChild('moneda', $datos['infoFactura']['moneda']);
-
         // pagos
         $pagos = $infoFactura->addChild('pagos');
         foreach ($datos['infoFactura']['pagos'] as $pago) {
@@ -157,7 +143,6 @@ XML;
                 $pagoNode->addChild('unidadTiempo', $pago['unidadTiempo']);
             }
         }
-
         // detalles
         $detalles = $factura->addChild('detalles');
         foreach ($datos['detalles'] as $detalle) {
@@ -168,7 +153,6 @@ XML;
             $detalleNode->addChild('precioUnitario', number_format($detalle['precioUnitario'], 6, '.', ''));
             $detalleNode->addChild('descuento', number_format($detalle['descuento'], 2, '.', ''));
             $detalleNode->addChild('precioTotalSinImpuesto', number_format($detalle['precioTotalSinImpuesto'], 2, '.', ''));
-
             if (!empty($detalle['detallesAdicionales'])) {
                 $detAdicionales = $detalleNode->addChild('detallesAdicionales');
                 foreach ($detalle['detallesAdicionales'] as $adicional) {
@@ -177,7 +161,6 @@ XML;
                     $ad->addAttribute('valor', $adicional['valor']);
                 }
             }
-
             $impuestos = $detalleNode->addChild('impuestos');
             foreach ($detalle['impuestos'] as $imp) {
                 $impuesto = $impuestos->addChild('impuesto');
@@ -188,7 +171,6 @@ XML;
                 $impuesto->addChild('valor', number_format($imp['valor'], 2, '.', ''));
             }
         }
-
         // infoAdicional
         if (!empty($datos['infoAdicional'])) {
             $infoAdicional = $factura->addChild('infoAdicional');
@@ -199,11 +181,8 @@ XML;
                 }
             }
         }
-
         $xmlString = $factura->asXML();
-
         $xmlFormateado = $this->formatXml($xmlString);
-
         return $xmlFormateado;
     }
     public function generarNotaCreditoXml($datos)
@@ -216,10 +195,7 @@ XML;
              id="comprobante" version="1.1.0">
 </notaCredito>
 XML;
-
         $notaCredito = new SimpleXMLElement($xml);
-
-
         // infoTributaria
         $infoTributaria = $notaCredito->addChild('infoTributaria');
         $infoTributaria->addChild('ambiente', $datos['infoTributaria']['ambiente']);
@@ -233,7 +209,6 @@ XML;
         $infoTributaria->addChild('ptoEmi', $datos['infoTributaria']['ptoEmi']);
         $infoTributaria->addChild('secuencial', $datos['infoTributaria']['secuencial']);
         $infoTributaria->addChild('dirMatriz', $datos['infoTributaria']['dirMatriz']);
-
         // infoNotaCredito
         $infoNotaCredito = $notaCredito->addChild('infoNotaCredito');
         $infoNotaCredito->addChild('fechaEmision', $datos['infoNotaCredito']['fechaEmision']);
@@ -248,7 +223,6 @@ XML;
         $infoNotaCredito->addChild('totalSinImpuestos', number_format($datos['infoNotaCredito']['totalSinImpuestos'], 2, '.', ''));
         $infoNotaCredito->addChild('valorModificacion', number_format($datos['infoNotaCredito']['valorModificacion'], 2, '.', ''));
         $infoNotaCredito->addChild('moneda', $datos['infoNotaCredito']['moneda']);
-
         $totalConImpuestos = $infoNotaCredito->addChild('totalConImpuestos');
         foreach ($datos['infoNotaCredito']['totalConImpuestos'] as $impuesto) {
             $totalImpuesto = $totalConImpuestos->addChild('totalImpuesto');
@@ -257,9 +231,7 @@ XML;
             $totalImpuesto->addChild('baseImponible', number_format($impuesto['baseImponible'], 2, '.', ''));
             $totalImpuesto->addChild('valor', number_format($impuesto['valor'], 2, '.', ''));
         }
-
         $infoNotaCredito->addChild('motivo', $datos['infoNotaCredito']['motivo']);
-
         // detalles
         $detalles = $notaCredito->addChild('detalles');
         foreach ($datos['detalles'] as $detalle) {
@@ -270,7 +242,6 @@ XML;
             $detalleNode->addChild('precioUnitario', number_format($detalle['precioUnitario'], 6, '.', ''));
             $detalleNode->addChild('descuento', number_format($detalle['descuento'], 2, '.', ''));
             $detalleNode->addChild('precioTotalSinImpuesto', number_format($detalle['precioTotalSinImpuesto'], 2, '.', ''));
-
             if (!empty($detalle['detallesAdicionales'])) {
                 $detallesAdicionales = $detalleNode->addChild('detallesAdicionales');
                 foreach ($detalle['detallesAdicionales'] as $adicional) {
@@ -278,7 +249,6 @@ XML;
                     $detAdicional->addAttribute('nombre', $adicional['nombre']);
                 }
             }
-
             $impuestos = $detalleNode->addChild('impuestos');
             foreach ($detalle['impuestos'] as $impuesto) {
                 $impuestoNode = $impuestos->addChild('impuesto');
@@ -289,7 +259,6 @@ XML;
                 $impuestoNode->addChild('valor', number_format($impuesto['valor'], 2, '.', ''));
             }
         }
-
         // infoAdicional
         if (!empty($datos['infoAdicional'])) {
             $infoAdicional = $notaCredito->addChild('infoAdicional');
@@ -298,11 +267,8 @@ XML;
                 $campoAdicional->addAttribute('nombre', $campo['nombre']);
             }
         }
-
         $xmlString = $notaCredito->asXML();
-
         $xmlFormateado = $this->formatXml($xmlString);
-
         return $xmlFormateado;
     }
     private function formatXml($xmlString)
@@ -311,40 +277,8 @@ XML;
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
         $dom->loadXML($xmlString);
-
         return $dom->saveXML();
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public function setInfoTributaria($data)
     {
         $infoTributaria = $this->xml->addChild('infoTributaria');
