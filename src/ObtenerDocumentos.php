@@ -39,7 +39,7 @@ class ObtenerDocumentos
             ];
         }
         if ($json) {
-            return response()->json($arrayRespuesta);
+            return json_encode($arrayRespuesta);
         } else {
             return $arrayRespuesta;
         }
