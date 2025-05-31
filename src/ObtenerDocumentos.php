@@ -6,7 +6,7 @@ use SoapClient;
 class ObtenerDocumentos
 {
     public function __construct() {}
-    public function obtenerDocumentoSRI($r)
+    public function obtenerDocumentoSRI($r,$json=false)
     {
         $arrayRespuesta = [];
         try {
@@ -38,6 +38,10 @@ class ObtenerDocumentos
                 'file' => $e->getFile()
             ];
         }
-        return $arrayRespuesta;
+        if ($json) {
+            return response()->json($arrayRespuesta);
+        } else {
+            return $arrayRespuesta;
+        }
     }
 }
