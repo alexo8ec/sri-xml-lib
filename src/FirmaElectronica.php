@@ -16,7 +16,6 @@ class FirmaElectronica
         $this->rutaCertificado = $rutaCertificado;
         $this->claveCertificado = $claveCertificado;
     }
-
     public function firmarXml(string $xmlPathOrigen, string $xmlPathDestino): array
     {
         $xmlFirmado = '';
