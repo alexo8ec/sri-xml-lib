@@ -77,7 +77,7 @@ XML;
     }
     public function generarFacturaXml($datos)
     {
-        echo '<pre>';
+        echo '<pre>Los Datos: ';
         print_r($datos);
         exit;
         $xml = <<<XML
