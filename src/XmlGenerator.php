@@ -77,6 +77,9 @@ XML;
     }
     public function generarFacturaXml($datos)
     {
+        echo '<pre>';
+        print_r($datos);
+        exit;
         $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <factura xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
