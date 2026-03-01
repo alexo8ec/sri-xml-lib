@@ -248,8 +248,9 @@ XML;
             if (!empty($detalle['detallesAdicionales'])) {
                 $detallesAdicionales = $detalleNode->addChild('detallesAdicionales');
                 foreach ($detalle['detallesAdicionales'] as $adicional) {
-                    $detAdicional = $detallesAdicionales->addChild('detAdicional', htmlspecialchars($adicional['valor']));
+                    $detAdicional = $detallesAdicionales->addChild('detAdicional');
                     $detAdicional->addAttribute('nombre', $adicional['nombre']);
+                    $detAdicional->addAttribute('valor', $adicional['valor']);
                 }
             }
             $impuestos = $detalleNode->addChild('impuestos');
