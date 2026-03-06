@@ -42,29 +42,128 @@ XML;
         // infoCompRetencion
         $infoCompRetencion = $retencion->addChild('infoCompRetencion');
         $infoCompRetencion->addChild('fechaEmision', $datos['infoCompRetencion']['fechaEmision']);
-        $infoCompRetencion->addChild('dirEstablecimiento', $datos['infoCompRetencion']['dirEstablecimiento']);
-        if (!empty($datos['infoTributaria']['contribuyenteEspecial'])) {
-            $infoTributaria->addChild('contribuyenteEspecial', $datos['infoTributaria']['contribuyenteEspecial']);
+        if (!empty($datos['infoCompRetencion']['dirEstablecimiento'])) {
+            $infoCompRetencion->addChild('dirEstablecimiento', $datos['infoCompRetencion']['dirEstablecimiento']);
         }
-        $infoCompRetencion->addChild('obligadoContabilidad', $datos['infoCompRetencion']['obligadoContabilidad']);
+        if (!empty($datos['infoCompRetencion']['contribuyenteEspecial'])) {
+            $infoCompRetencion->addChild('contribuyenteEspecial', $datos['infoCompRetencion']['contribuyenteEspecial']);
+        }
+        if (!empty($datos['infoCompRetencion']['obligadoContabilidad'])) {
+            $infoCompRetencion->addChild('obligadoContabilidad', $datos['infoCompRetencion']['obligadoContabilidad']);
+        }
         $infoCompRetencion->addChild('tipoIdentificacionSujetoRetenido', $datos['infoCompRetencion']['tipoIdentificacionSujetoRetenido']);
-        $infoCompRetencion->addChild('tipoSujetoRetenido', $datos['infoCompRetencion']['tipoSujetoRetenido']);
-        $infoCompRetencion->addChild('identificacionComprador', $datos['infoCompRetencion']['identificacionComprador']);
+        if (!empty($datos['infoCompRetencion']['tipoSujetoRetenido'])) {
+            $infoCompRetencion->addChild('tipoSujetoRetenido', $datos['infoCompRetencion']['tipoSujetoRetenido']);
+        }
         $infoCompRetencion->addChild('parteRel', $datos['infoCompRetencion']['parteRel']);
         $infoCompRetencion->addChild('razonSocialSujetoRetenido', $datos['infoCompRetencion']['razonSocialSujetoRetenido']);
         $infoCompRetencion->addChild('identificacionSujetoRetenido', $datos['infoCompRetencion']['identificacionSujetoRetenido']);
-        // impuestos
-        $impuestos = $retencion->addChild('impuestos');
-        foreach ($datos['impuestos'] as $imp) {
-            $impuesto = $impuestos->addChild('impuesto');
-            $impuesto->addChild('codigo', $imp['codigo']);
-            $impuesto->addChild('codigoRetencion', $imp['codigoRetencion']);
-            $impuesto->addChild('baseImponible', number_format($imp['baseImponible'], 2, '.', ''));
-            $impuesto->addChild('porcentajeRetener', number_format($imp['porcentajeRetener'], 2, '.', ''));
-            $impuesto->addChild('valorRetenido', number_format($imp['valorRetenido'], 2, '.', ''));
-            $impuesto->addChild('codDocSustento', $imp['codDocSustento']);
-            $impuesto->addChild('numDocSustento', $imp['numDocSustento']);
-            $impuesto->addChild('fechaEmisionDocSustento', $imp['fechaEmisionDocSustento']);
+        $infoCompRetencion->addChild('periodoFiscal', $datos['infoCompRetencion']['periodoFiscal']);
+        // docsSustento
+        $docsSustento = $retencion->addChild('docsSustento');
+        foreach ($datos['docsSustento'] as $doc) {
+            $docSustento = $docsSustento->addChild('docSustento');
+            $docSustento->addChild('codSustento', $doc['codSustento']);
+            $docSustento->addChild('codDocSustento', $doc['codDocSustento']);
+            $docSustento->addChild('numDocSustento', $doc['numDocSustento']);
+            $docSustento->addChild('fechaEmisionDocSustento', $doc['fechaEmisionDocSustento']);
+            if (!empty($doc['fechaRegistroContable'])) {
+                $docSustento->addChild('fechaRegistroContable', $doc['fechaRegistroContable']);
+            }
+            if (!empty($doc['numAutDocSustento'])) {
+                $docSustento->addChild('numAutDocSustento', $doc['numAutDocSustento']);
+            }
+            $docSustento->addChild('pagoLocExt', $doc['pagoLocExt']);
+            if (!empty($doc['tipoRegi'])) {
+                $docSustento->addChild('tipoRegi', $doc['tipoRegi']);
+            }
+            if (!empty($doc['paisEfecPago'])) {
+                $docSustento->addChild('paisEfecPago', $doc['paisEfecPago']);
+            }
+            if (!empty($doc['aplicConvDobTrib'])) {
+                $docSustento->addChild('aplicConvDobTrib', $doc['aplicConvDobTrib']);
+            }
+            if (!empty($doc['pagExtSujRetNorLeg'])) {
+                $docSustento->addChild('pagExtSujRetNorLeg', $doc['pagExtSujRetNorLeg']);
+            }
+            if (!empty($doc['pagoRegFis'])) {
+                $docSustento->addChild('pagoRegFis', $doc['pagoRegFis']);
+            }
+            if (!empty($doc['totalComprobantesReembolso'])) {
+                $docSustento->addChild('totalComprobantesReembolso', number_format($doc['totalComprobantesReembolso'], 2, '.', ''));
+            }
+            if (!empty($doc['totalBaseImponibleReembolso'])) {
+                $docSustento->addChild('totalBaseImponibleReembolso', number_format($doc['totalBaseImponibleReembolso'], 2, '.', ''));
+            }
+            if (!empty($doc['totalImpuestoReembolso'])) {
+                $docSustento->addChild('totalImpuestoReembolso', number_format($doc['totalImpuestoReembolso'], 2, '.', ''));
+            }
+            $docSustento->addChild('totalSinImpuestos', number_format($doc['totalSinImpuestos'], 2, '.', ''));
+            $docSustento->addChild('importeTotal', number_format($doc['importeTotal'], 2, '.', ''));
+            // impuestosDocSustento
+            $impuestosDocSustento = $docSustento->addChild('impuestosDocSustento');
+            foreach ($doc['impuestosDocSustento'] as $impDoc) {
+                $impuestoDocSustento = $impuestosDocSustento->addChild('impuestoDocSustento');
+                $impuestoDocSustento->addChild('codImpuestoDocSustento', $impDoc['codImpuestoDocSustento']);
+                $impuestoDocSustento->addChild('codigoPorcentaje', $impDoc['codigoPorcentaje']);
+                $impuestoDocSustento->addChild('baseImponible', number_format($impDoc['baseImponible'], 2, '.', ''));
+                $impuestoDocSustento->addChild('tarifa', number_format($impDoc['tarifa'], 2, '.', ''));
+                $impuestoDocSustento->addChild('valorImpuesto', number_format($impDoc['valorImpuesto'], 2, '.', ''));
+            }
+            // retenciones
+            $retenciones = $docSustento->addChild('retenciones');
+            foreach ($doc['retenciones'] as $ret) {
+                $retencionNode = $retenciones->addChild('retencion');
+                $retencionNode->addChild('codigo', $ret['codigo']);
+                $retencionNode->addChild('codigoRetencion', $ret['codigoRetencion']);
+                $retencionNode->addChild('baseImponible', number_format($ret['baseImponible'], 2, '.', ''));
+                $retencionNode->addChild('porcentajeRetener', number_format($ret['porcentajeRetener'], 2, '.', ''));
+                $retencionNode->addChild('valorRetenido', number_format($ret['valorRetenido'], 2, '.', ''));
+                if (!empty($ret['dividendos'])) {
+                    $dividendos = $retencionNode->addChild('dividendos');
+                    $dividendos->addChild('fechaPagoDiv', $ret['dividendos']['fechaPagoDiv']);
+                    $dividendos->addChild('imRentaSoc', number_format($ret['dividendos']['imRentaSoc'], 2, '.', ''));
+                    $dividendos->addChild('ejerFisUtDiv', number_format($ret['dividendos']['ejerFisUtDiv'], 2, '.', ''));
+                }
+                if (!empty($ret['compraCajBanano'])) {
+                    $compraCajBanano = $retencionNode->addChild('compraCajBanano');
+                    $compraCajBanano->addChild('numCajBan', number_format($ret['compraCajBanano']['numCajBan'], 2, '.', ''));
+                    $compraCajBanano->addChild('precCajBan', number_format($ret['compraCajBanano']['precCajBan'], 2, '.', ''));
+                }
+            }
+            // reembolsos (opcional)
+            if (!empty($doc['reembolsos'])) {
+                $reembolsos = $docSustento->addChild('reembolsos');
+                foreach ($doc['reembolsos'] as $reembolso) {
+                    $reembolsoDetalle = $reembolsos->addChild('reembolsoDetalle');
+                    $reembolsoDetalle->addChild('tipoIdentificacionProveedorReembolso', $reembolso['tipoIdentificacionProveedorReembolso']);
+                    $reembolsoDetalle->addChild('identificacionProveedorReembolso', $reembolso['identificacionProveedorReembolso']);
+                    if (!empty($reembolso['codPaisPagoProveedorReembolso'])) {
+                        $reembolsoDetalle->addChild('codPaisPagoProveedorReembolso', $reembolso['codPaisPagoProveedorReembolso']);
+                    }
+                    // Agregar otros campos de reembolso según necesidad
+                }
+            }
+            // pagos
+            $pagos = $docSustento->addChild('pagos');
+            foreach ($doc['pagos'] as $pago) {
+                $pagoNode = $pagos->addChild('pago');
+                $pagoNode->addChild('formaPago', $pago['formaPago']);
+                $pagoNode->addChild('total', number_format($pago['total'], 2, '.', ''));
+                if (!empty($pago['plazo'])) {
+                    $pagoNode->addChild('plazo', $pago['plazo']);
+                }
+                if (!empty($pago['unidadTiempo'])) {
+                    $pagoNode->addChild('unidadTiempo', $pago['unidadTiempo']);
+                }
+            }
+        }
+        // maquinaFiscal (opcional)
+        if (!empty($datos['maquinaFiscal'])) {
+            $maquinaFiscal = $retencion->addChild('maquinaFiscal');
+            $maquinaFiscal->addChild('marca', $datos['maquinaFiscal']['marca']);
+            $maquinaFiscal->addChild('modelo', $datos['maquinaFiscal']['modelo']);
+            $maquinaFiscal->addChild('serie', $datos['maquinaFiscal']['serie']);
         }
         // infoAdicional
         if (!empty($datos['infoAdicional'])) {
