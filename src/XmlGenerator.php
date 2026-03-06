@@ -33,8 +33,12 @@ XML;
         $infoTributaria->addChild('ptoEmi', $datos['infoTributaria']['ptoEmi']);
         $infoTributaria->addChild('secuencial', $datos['infoTributaria']['secuencial']);
         $infoTributaria->addChild('dirMatriz', $datos['infoTributaria']['dirMatriz']);
-        $infoTributaria->addChild('agenteRetencion', $datos['infoTributaria']['agenteRetencion']);
-        $infoTributaria->addChild('contribuyenteRimpe', $datos['infoTributaria']['contribuyenteRimpe']);
+        if (!empty($datos['infoTributaria']['agenteRetencion'])) {
+            $infoTributaria->addChild('agenteRetencion', $datos['infoTributaria']['agenteRetencion']);
+        }
+        if (!empty($datos['infoTributaria']['contribuyenteRimpe'])) {
+            $infoTributaria->addChild('contribuyenteRimpe', $datos['infoTributaria']['contribuyenteRimpe']);
+        }
         // infoCompRetencion
         $infoCompRetencion = $retencion->addChild('infoCompRetencion');
         $infoCompRetencion->addChild('fechaEmision', $datos['infoCompRetencion']['fechaEmision']);
