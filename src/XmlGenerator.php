@@ -9,7 +9,7 @@ class XmlGenerator
 {
     private $xml;
     public function __construct() {}
-    public function generarRetencionXml($datos)
+    public function generarRetencionXml(array $datos)
     {
         $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
@@ -178,7 +178,7 @@ XML;
         $xmlString = $retencion->asXML();
         return $this->formatXml($xmlString);
     }
-    public function generarFacturaXml($datos)
+    public function generarFacturaXml(array $datos)
     {
         $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
@@ -291,7 +291,7 @@ XML;
         $xmlFormateado = $this->formatXml($xmlString);
         return $xmlFormateado;
     }
-    public function generarNotaCreditoXml($datos)
+    public function generarNotaCreditoXml(array $datos)
     {
         $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
@@ -377,6 +377,221 @@ XML;
         $xmlString = $notaCredito->asXML();
         $xmlFormateado = $this->formatXml($xmlString);
         return $xmlFormateado;
+    }
+    public function generarGuiaRemisionXml(array $datos): string
+    {
+        $version = $datos['version'] ?? '1.1.0';
+
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<guiaRemision id="comprobante" version="{$version}">
+</guiaRemision>
+XML;
+
+        $guia = new \SimpleXMLElement($xml);
+
+        /*
+    |--------------------------------------------------------------------------
+    | infoTributaria
+    |--------------------------------------------------------------------------
+    */
+        $infoTributaria = $guia->addChild('infoTributaria');
+
+        $this->addChildText($infoTributaria, 'ambiente', $datos['infoTributaria']['ambiente']);
+        $this->addChildText($infoTributaria, 'tipoEmision', $datos['infoTributaria']['tipoEmision'] ?? '1');
+        $this->addChildText($infoTributaria, 'razonSocial', $datos['infoTributaria']['razonSocial']);
+
+        if (!empty($datos['infoTributaria']['nombreComercial'])) {
+            $this->addChildText($infoTributaria, 'nombreComercial', $datos['infoTributaria']['nombreComercial']);
+        }
+
+        $this->addChildText($infoTributaria, 'ruc', $datos['infoTributaria']['ruc']);
+        $this->addChildText($infoTributaria, 'claveAcceso', $datos['infoTributaria']['claveAcceso']);
+        $this->addChildText($infoTributaria, 'codDoc', '06');
+        $this->addChildText($infoTributaria, 'estab', $datos['infoTributaria']['estab']);
+        $this->addChildText($infoTributaria, 'ptoEmi', $datos['infoTributaria']['ptoEmi']);
+        $this->addChildText($infoTributaria, 'secuencial', $datos['infoTributaria']['secuencial']);
+        $this->addChildText($infoTributaria, 'dirMatriz', $datos['infoTributaria']['dirMatriz']);
+
+        if (!empty($datos['infoTributaria']['agenteRetencion'])) {
+            $this->addChildText($infoTributaria, 'agenteRetencion', $datos['infoTributaria']['agenteRetencion']);
+        }
+
+        if (!empty($datos['infoTributaria']['contribuyenteRimpe'])) {
+            $this->addChildText($infoTributaria, 'contribuyenteRimpe', $datos['infoTributaria']['contribuyenteRimpe']);
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | infoGuiaRemision
+    |--------------------------------------------------------------------------
+    */
+        $infoGuia = $guia->addChild('infoGuiaRemision');
+
+        if (!empty($datos['infoGuiaRemision']['dirEstablecimiento'])) {
+            $this->addChildText($infoGuia, 'dirEstablecimiento', $datos['infoGuiaRemision']['dirEstablecimiento']);
+        }
+
+        $this->addChildText($infoGuia, 'dirPartida', $datos['infoGuiaRemision']['dirPartida']);
+        $this->addChildText($infoGuia, 'razonSocialTransportista', $datos['infoGuiaRemision']['razonSocialTransportista']);
+        $this->addChildText($infoGuia, 'tipoIdentificacionTransportista', $datos['infoGuiaRemision']['tipoIdentificacionTransportista']);
+        $this->addChildText($infoGuia, 'rucTransportista', $datos['infoGuiaRemision']['rucTransportista']);
+
+        if (!empty($datos['infoGuiaRemision']['rise'])) {
+            $this->addChildText($infoGuia, 'rise', $datos['infoGuiaRemision']['rise']);
+        }
+
+        if (!empty($datos['infoGuiaRemision']['obligadoContabilidad'])) {
+            $this->addChildText($infoGuia, 'obligadoContabilidad', $datos['infoGuiaRemision']['obligadoContabilidad']);
+        }
+
+        if (!empty($datos['infoGuiaRemision']['contribuyenteEspecial'])) {
+            $this->addChildText($infoGuia, 'contribuyenteEspecial', $datos['infoGuiaRemision']['contribuyenteEspecial']);
+        }
+
+        $this->addChildText($infoGuia, 'fechaIniTransporte', $this->fechaSri($datos['infoGuiaRemision']['fechaIniTransporte']));
+        $this->addChildText($infoGuia, 'fechaFinTransporte', $this->fechaSri($datos['infoGuiaRemision']['fechaFinTransporte']));
+        $this->addChildText($infoGuia, 'placa', $datos['infoGuiaRemision']['placa']);
+
+        /*
+    |--------------------------------------------------------------------------
+    | destinatarios
+    |--------------------------------------------------------------------------
+    */
+        $destinatarios = $guia->addChild('destinatarios');
+
+        foreach ($datos['destinatarios'] as $destinatarioData) {
+            $destinatario = $destinatarios->addChild('destinatario');
+
+            $this->addChildText($destinatario, 'identificacionDestinatario', $destinatarioData['identificacionDestinatario']);
+            $this->addChildText($destinatario, 'razonSocialDestinatario', $destinatarioData['razonSocialDestinatario']);
+            $this->addChildText($destinatario, 'dirDestinatario', $destinatarioData['dirDestinatario']);
+            $this->addChildText($destinatario, 'motivoTraslado', $destinatarioData['motivoTraslado']);
+
+            if (!empty($destinatarioData['docAduaneroUnico'])) {
+                $this->addChildText($destinatario, 'docAduaneroUnico', $destinatarioData['docAduaneroUnico']);
+            }
+
+            if (!empty($destinatarioData['codEstabDestino'])) {
+                $this->addChildText($destinatario, 'codEstabDestino', $destinatarioData['codEstabDestino']);
+            }
+
+            if (!empty($destinatarioData['ruta'])) {
+                $this->addChildText($destinatario, 'ruta', $destinatarioData['ruta']);
+            }
+
+            if (!empty($destinatarioData['codDocSustento'])) {
+                $this->addChildText($destinatario, 'codDocSustento', $destinatarioData['codDocSustento']);
+            }
+
+            if (!empty($destinatarioData['numDocSustento'])) {
+                $this->addChildText($destinatario, 'numDocSustento', $destinatarioData['numDocSustento']);
+            }
+
+            if (!empty($destinatarioData['numAutDocSustento'])) {
+                $this->addChildText($destinatario, 'numAutDocSustento', $destinatarioData['numAutDocSustento']);
+            }
+
+            if (!empty($destinatarioData['fechaEmisionDocSustento'])) {
+                $this->addChildText($destinatario, 'fechaEmisionDocSustento', $this->fechaSri($destinatarioData['fechaEmisionDocSustento']));
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | detalles
+        |--------------------------------------------------------------------------
+        */
+            $detalles = $destinatario->addChild('detalles');
+
+            foreach ($destinatarioData['detalles'] as $detalleData) {
+                $detalle = $detalles->addChild('detalle');
+
+                if (!empty($detalleData['codigoInterno'])) {
+                    $this->addChildText($detalle, 'codigoInterno', $detalleData['codigoInterno']);
+                }
+
+                if (!empty($detalleData['codigoAdicional'])) {
+                    $this->addChildText($detalle, 'codigoAdicional', $detalleData['codigoAdicional']);
+                }
+
+                $this->addChildText($detalle, 'descripcion', $detalleData['descripcion']);
+                $this->addChildText($detalle, 'cantidad', $this->numeroSri($detalleData['cantidad'], 6));
+
+                if (!empty($detalleData['detallesAdicionales']) && is_array($detalleData['detallesAdicionales'])) {
+                    $detallesAdicionales = $detalle->addChild('detallesAdicionales');
+
+                    foreach ($detalleData['detallesAdicionales'] as $detAdicionalData) {
+                        if (empty($detAdicionalData['nombre']) || empty($detAdicionalData['valor'])) {
+                            continue;
+                        }
+
+                        $detAdicional = $detallesAdicionales->addChild('detAdicional');
+                        $detAdicional->addAttribute('nombre', $this->limpiarTexto($detAdicionalData['nombre']));
+                        $detAdicional->addAttribute('valor', $this->limpiarTexto($detAdicionalData['valor']));
+                    }
+                }
+            }
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | infoAdicional
+    |--------------------------------------------------------------------------
+    */
+        if (!empty($datos['infoAdicional']) && is_array($datos['infoAdicional'])) {
+            $infoAdicional = $guia->addChild('infoAdicional');
+
+            foreach ($datos['infoAdicional'] as $campo) {
+                if (empty($campo['nombre']) || empty($campo['valor'])) {
+                    continue;
+                }
+
+                $campoAdicional = $infoAdicional->addChild('campoAdicional');
+                $campoAdicional->addAttribute('nombre', $this->limpiarTexto($campo['nombre']));
+
+                $node = dom_import_simplexml($campoAdicional);
+                $node->appendChild($node->ownerDocument->createTextNode($this->limpiarTexto($campo['valor'])));
+            }
+        }
+
+        return $this->formatXml($guia->asXML());
+    }
+    private function addChildText(\SimpleXMLElement $parent, string $name, $value): \SimpleXMLElement
+    {
+        $child = $parent->addChild($name);
+
+        $node = dom_import_simplexml($child);
+        $node->appendChild(
+            $node->ownerDocument->createTextNode($this->limpiarTexto($value))
+        );
+
+        return $child;
+    }
+
+    private function limpiarTexto($texto): string
+    {
+        $texto = (string) ($texto ?? '');
+
+        $texto = trim($texto);
+
+        // Evita caracteres raros que suelen romper XML o XSD
+        $texto = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u', '', $texto);
+
+        return $texto;
+    }
+
+    private function fechaSri($fecha): string
+    {
+        if (empty($fecha)) {
+            return '';
+        }
+
+        return date('d/m/Y', strtotime($fecha));
+    }
+
+    private function numeroSri($valor, int $decimales = 2): string
+    {
+        return number_format((float) ($valor ?? 0), $decimales, '.', '');
     }
     private function formatXml($xmlString)
     {
