@@ -556,6 +556,304 @@ XML;
 
         return $this->formatXml($guia->asXML());
     }
+    public function generarLiquidacionCompraXml(array $datos): string
+    {
+        $version = (string) ($datos['version'] ?? '1.1.0');
+
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<liquidacionCompra id="comprobante" version="{$version}">
+</liquidacionCompra>
+XML;
+
+        $liquidacion = new \SimpleXMLElement($xml);
+
+        /*
+    |--------------------------------------------------------------------------
+    | infoTributaria
+    |--------------------------------------------------------------------------
+    */
+        $infoTributaria = $liquidacion->addChild('infoTributaria');
+
+        $this->addChildText($infoTributaria, 'ambiente', $datos['infoTributaria']['ambiente']);
+        $this->addChildText($infoTributaria, 'tipoEmision', $datos['infoTributaria']['tipoEmision'] ?? '1');
+        $this->addChildText($infoTributaria, 'razonSocial', $datos['infoTributaria']['razonSocial']);
+
+        if (!empty($datos['infoTributaria']['nombreComercial'])) {
+            $this->addChildText($infoTributaria, 'nombreComercial', $datos['infoTributaria']['nombreComercial']);
+        }
+
+        $this->addChildText($infoTributaria, 'ruc', $datos['infoTributaria']['ruc']);
+        $this->addChildText($infoTributaria, 'claveAcceso', $datos['infoTributaria']['claveAcceso']);
+        $this->addChildText($infoTributaria, 'codDoc', '03');
+        $this->addChildText($infoTributaria, 'estab', $datos['infoTributaria']['estab']);
+        $this->addChildText($infoTributaria, 'ptoEmi', $datos['infoTributaria']['ptoEmi']);
+        $this->addChildText($infoTributaria, 'secuencial', $datos['infoTributaria']['secuencial']);
+        $this->addChildText($infoTributaria, 'dirMatriz', $datos['infoTributaria']['dirMatriz']);
+
+        if (!empty($datos['infoTributaria']['agenteRetencion'])) {
+            $this->addChildText($infoTributaria, 'agenteRetencion', $datos['infoTributaria']['agenteRetencion']);
+        }
+
+        if (!empty($datos['infoTributaria']['contribuyenteRimpe'])) {
+            $this->addChildText($infoTributaria, 'contribuyenteRimpe', $datos['infoTributaria']['contribuyenteRimpe']);
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | infoLiquidacionCompra
+    |--------------------------------------------------------------------------
+    */
+        $infoLiquidacion = $liquidacion->addChild('infoLiquidacionCompra');
+
+        $this->addChildText($infoLiquidacion, 'fechaEmision', $this->fechaSri($datos['infoLiquidacionCompra']['fechaEmision']));
+
+        if (!empty($datos['infoLiquidacionCompra']['dirEstablecimiento'])) {
+            $this->addChildText($infoLiquidacion, 'dirEstablecimiento', $datos['infoLiquidacionCompra']['dirEstablecimiento']);
+        }
+
+        if (!empty($datos['infoLiquidacionCompra']['contribuyenteEspecial'])) {
+            $this->addChildText($infoLiquidacion, 'contribuyenteEspecial', $datos['infoLiquidacionCompra']['contribuyenteEspecial']);
+        }
+
+        if (!empty($datos['infoLiquidacionCompra']['obligadoContabilidad'])) {
+            $this->addChildText($infoLiquidacion, 'obligadoContabilidad', $datos['infoLiquidacionCompra']['obligadoContabilidad']);
+        }
+
+        $this->addChildText($infoLiquidacion, 'tipoIdentificacionProveedor', $datos['infoLiquidacionCompra']['tipoIdentificacionProveedor']);
+        $this->addChildText($infoLiquidacion, 'razonSocialProveedor', $datos['infoLiquidacionCompra']['razonSocialProveedor']);
+        $this->addChildText($infoLiquidacion, 'identificacionProveedor', $datos['infoLiquidacionCompra']['identificacionProveedor']);
+
+        if (!empty($datos['infoLiquidacionCompra']['direccionProveedor'])) {
+            $this->addChildText($infoLiquidacion, 'direccionProveedor', $datos['infoLiquidacionCompra']['direccionProveedor']);
+        }
+
+        $this->addChildText($infoLiquidacion, 'totalSinImpuestos', $this->numeroSri($datos['infoLiquidacionCompra']['totalSinImpuestos'], 2));
+        $this->addChildText($infoLiquidacion, 'totalDescuento', $this->numeroSri($datos['infoLiquidacionCompra']['totalDescuento'] ?? 0, 2));
+
+        /*
+    |--------------------------------------------------------------------------
+    | Reembolso - opcional
+    |--------------------------------------------------------------------------
+    | Úsalo solo cuando corresponda.
+    */
+        if (!empty($datos['infoLiquidacionCompra']['codDocReembolso'])) {
+            $this->addChildText($infoLiquidacion, 'codDocReembolso', $datos['infoLiquidacionCompra']['codDocReembolso']);
+
+            if (!empty($datos['infoLiquidacionCompra']['totalComprobantesReembolso'])) {
+                $this->addChildText($infoLiquidacion, 'totalComprobantesReembolso', $this->numeroSri($datos['infoLiquidacionCompra']['totalComprobantesReembolso'], 2));
+            }
+
+            if (!empty($datos['infoLiquidacionCompra']['totalBaseImponibleReembolso'])) {
+                $this->addChildText($infoLiquidacion, 'totalBaseImponibleReembolso', $this->numeroSri($datos['infoLiquidacionCompra']['totalBaseImponibleReembolso'], 2));
+            }
+
+            if (!empty($datos['infoLiquidacionCompra']['totalImpuestoReembolso'])) {
+                $this->addChildText($infoLiquidacion, 'totalImpuestoReembolso', $this->numeroSri($datos['infoLiquidacionCompra']['totalImpuestoReembolso'], 2));
+            }
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | totalConImpuestos
+    |--------------------------------------------------------------------------
+    */
+        $totalConImpuestos = $infoLiquidacion->addChild('totalConImpuestos');
+
+        foreach ($datos['infoLiquidacionCompra']['totalConImpuestos'] as $impuestoData) {
+            $totalImpuesto = $totalConImpuestos->addChild('totalImpuesto');
+
+            $this->addChildText($totalImpuesto, 'codigo', $impuestoData['codigo']);
+            $this->addChildText($totalImpuesto, 'codigoPorcentaje', $impuestoData['codigoPorcentaje']);
+
+            if (isset($impuestoData['descuentoAdicional'])) {
+                $this->addChildText($totalImpuesto, 'descuentoAdicional', $this->numeroSri($impuestoData['descuentoAdicional'], 2));
+            }
+
+            $this->addChildText($totalImpuesto, 'baseImponible', $this->numeroSri($impuestoData['baseImponible'], 2));
+
+            if (isset($impuestoData['tarifa'])) {
+                $this->addChildText($totalImpuesto, 'tarifa', $this->numeroSri($impuestoData['tarifa'], 2));
+            }
+
+            $this->addChildText($totalImpuesto, 'valor', $this->numeroSri($impuestoData['valor'], 2));
+        }
+
+        $this->addChildText($infoLiquidacion, 'importeTotal', $this->numeroSri($datos['infoLiquidacionCompra']['importeTotal'], 2));
+        $this->addChildText($infoLiquidacion, 'moneda', $datos['infoLiquidacionCompra']['moneda'] ?? 'DOLAR');
+
+        /*
+    |--------------------------------------------------------------------------
+    | pagos
+    |--------------------------------------------------------------------------
+    */
+        $pagos = $infoLiquidacion->addChild('pagos');
+
+        foreach ($datos['infoLiquidacionCompra']['pagos'] as $pagoData) {
+            $pago = $pagos->addChild('pago');
+
+            $this->addChildText($pago, 'formaPago', $pagoData['formaPago']);
+            $this->addChildText($pago, 'total', $this->numeroSri($pagoData['total'], 2));
+
+            if (isset($pagoData['plazo'])) {
+                $this->addChildText($pago, 'plazo', $pagoData['plazo']);
+            }
+
+            if (!empty($pagoData['unidadTiempo'])) {
+                $this->addChildText($pago, 'unidadTiempo', $pagoData['unidadTiempo']);
+            }
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | detalles
+    |--------------------------------------------------------------------------
+    */
+        $detalles = $liquidacion->addChild('detalles');
+
+        foreach ($datos['detalles'] as $detalleData) {
+            $detalle = $detalles->addChild('detalle');
+
+            $this->addChildText($detalle, 'codigoPrincipal', $detalleData['codigoPrincipal']);
+
+            if (!empty($detalleData['codigoAuxiliar'])) {
+                $this->addChildText($detalle, 'codigoAuxiliar', $detalleData['codigoAuxiliar']);
+            }
+
+            $this->addChildText($detalle, 'descripcion', $detalleData['descripcion']);
+
+            if (!empty($detalleData['unidadMedida'])) {
+                $this->addChildText($detalle, 'unidadMedida', $detalleData['unidadMedida']);
+            }
+
+            $this->addChildText($detalle, 'cantidad', $this->numeroSri($detalleData['cantidad'], 6));
+            $this->addChildText($detalle, 'precioUnitario', $this->numeroSri($detalleData['precioUnitario'], 6));
+            $this->addChildText($detalle, 'descuento', $this->numeroSri($detalleData['descuento'] ?? 0, 2));
+            $this->addChildText($detalle, 'precioTotalSinImpuesto', $this->numeroSri($detalleData['precioTotalSinImpuesto'], 2));
+
+            /*
+        |--------------------------------------------------------------------------
+        | detallesAdicionales - opcional
+        |--------------------------------------------------------------------------
+        */
+            if (!empty($detalleData['detallesAdicionales']) && is_array($detalleData['detallesAdicionales'])) {
+                $detallesAdicionales = $detalle->addChild('detallesAdicionales');
+
+                foreach ($detalleData['detallesAdicionales'] as $detAdicionalData) {
+                    if (empty($detAdicionalData['nombre']) || empty($detAdicionalData['valor'])) {
+                        continue;
+                    }
+
+                    $detAdicional = $detallesAdicionales->addChild('detAdicional');
+                    $detAdicional->addAttribute('nombre', $this->limpiarTexto($detAdicionalData['nombre']));
+                    $detAdicional->addAttribute('valor', $this->limpiarTexto($detAdicionalData['valor']));
+                }
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | impuestos detalle
+        |--------------------------------------------------------------------------
+        */
+            $impuestos = $detalle->addChild('impuestos');
+
+            foreach ($detalleData['impuestos'] as $impuestoData) {
+                $impuesto = $impuestos->addChild('impuesto');
+
+                $this->addChildText($impuesto, 'codigo', $impuestoData['codigo']);
+                $this->addChildText($impuesto, 'codigoPorcentaje', $impuestoData['codigoPorcentaje']);
+                $this->addChildText($impuesto, 'tarifa', $this->numeroSri($impuestoData['tarifa'], 2));
+                $this->addChildText($impuesto, 'baseImponible', $this->numeroSri($impuestoData['baseImponible'], 2));
+                $this->addChildText($impuesto, 'valor', $this->numeroSri($impuestoData['valor'], 2));
+            }
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | reembolsos - opcional
+    |--------------------------------------------------------------------------
+    */
+        if (!empty($datos['reembolsos']) && is_array($datos['reembolsos'])) {
+            $reembolsos = $liquidacion->addChild('reembolsos');
+
+            foreach ($datos['reembolsos'] as $reembolsoData) {
+                $reembolsoDetalle = $reembolsos->addChild('reembolsoDetalle');
+
+                $this->addChildText($reembolsoDetalle, 'tipoIdentificacionProveedorReembolso', $reembolsoData['tipoIdentificacionProveedorReembolso']);
+                $this->addChildText($reembolsoDetalle, 'identificacionProveedorReembolso', $reembolsoData['identificacionProveedorReembolso']);
+
+                if (!empty($reembolsoData['codPaisPagoProveedorReembolso'])) {
+                    $this->addChildText($reembolsoDetalle, 'codPaisPagoProveedorReembolso', $reembolsoData['codPaisPagoProveedorReembolso']);
+                }
+
+                $this->addChildText($reembolsoDetalle, 'tipoProveedorReembolso', $reembolsoData['tipoProveedorReembolso']);
+                $this->addChildText($reembolsoDetalle, 'codDocReembolso', $reembolsoData['codDocReembolso']);
+                $this->addChildText($reembolsoDetalle, 'estabDocReembolso', $reembolsoData['estabDocReembolso']);
+                $this->addChildText($reembolsoDetalle, 'ptoEmiDocReembolso', $reembolsoData['ptoEmiDocReembolso']);
+                $this->addChildText($reembolsoDetalle, 'secuencialDocReembolso', $reembolsoData['secuencialDocReembolso']);
+                $this->addChildText($reembolsoDetalle, 'fechaEmisionDocReembolso', $this->fechaSri($reembolsoData['fechaEmisionDocReembolso']));
+                $this->addChildText($reembolsoDetalle, 'numeroautorizacionDocReemb', $reembolsoData['numeroautorizacionDocReemb']);
+
+                $detalleImpuestos = $reembolsoDetalle->addChild('detalleImpuestos');
+
+                foreach ($reembolsoData['detalleImpuestos'] as $impuestoReembolsoData) {
+                    $detalleImpuesto = $detalleImpuestos->addChild('detalleImpuesto');
+
+                    $this->addChildText($detalleImpuesto, 'codigo', $impuestoReembolsoData['codigo']);
+                    $this->addChildText($detalleImpuesto, 'codigoPorcentaje', $impuestoReembolsoData['codigoPorcentaje']);
+                    $this->addChildText($detalleImpuesto, 'tarifa', $this->numeroSri($impuestoReembolsoData['tarifa'], 2));
+                    $this->addChildText($detalleImpuesto, 'baseImponibleReembolso', $this->numeroSri($impuestoReembolsoData['baseImponibleReembolso'], 2));
+                    $this->addChildText($detalleImpuesto, 'impuestoReembolso', $this->numeroSri($impuestoReembolsoData['impuestoReembolso'], 2));
+                }
+            }
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | maquinaFiscal - opcional
+    |--------------------------------------------------------------------------
+    */
+        if (!empty($datos['maquinaFiscal']) && is_array($datos['maquinaFiscal'])) {
+            $maquinaFiscal = $liquidacion->addChild('maquinaFiscal');
+
+            if (!empty($datos['maquinaFiscal']['marca'])) {
+                $this->addChildText($maquinaFiscal, 'marca', $datos['maquinaFiscal']['marca']);
+            }
+
+            if (!empty($datos['maquinaFiscal']['modelo'])) {
+                $this->addChildText($maquinaFiscal, 'modelo', $datos['maquinaFiscal']['modelo']);
+            }
+
+            if (!empty($datos['maquinaFiscal']['serie'])) {
+                $this->addChildText($maquinaFiscal, 'serie', $datos['maquinaFiscal']['serie']);
+            }
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | infoAdicional
+    |--------------------------------------------------------------------------
+    */
+        if (!empty($datos['infoAdicional']) && is_array($datos['infoAdicional'])) {
+            $infoAdicional = $liquidacion->addChild('infoAdicional');
+
+            foreach ($datos['infoAdicional'] as $campo) {
+                if (empty($campo['nombre']) || empty($campo['valor'])) {
+                    continue;
+                }
+
+                $campoAdicional = $infoAdicional->addChild('campoAdicional');
+                $campoAdicional->addAttribute('nombre', $this->limpiarTexto($campo['nombre']));
+
+                $node = dom_import_simplexml($campoAdicional);
+                $node->appendChild(
+                    $node->ownerDocument->createTextNode($this->limpiarTexto($campo['valor']))
+                );
+            }
+        }
+
+        return $this->formatXml($liquidacion->asXML());
+    }
     private function addChildText(\SimpleXMLElement $parent, string $name, $value): \SimpleXMLElement
     {
         $child = $parent->addChild($name);
@@ -567,7 +865,6 @@ XML;
 
         return $child;
     }
-
     private function limpiarTexto($texto): string
     {
         $texto = (string) ($texto ?? '');
@@ -579,7 +876,6 @@ XML;
 
         return $texto;
     }
-
     private function fechaSri($fecha): string
     {
         if (empty($fecha)) {
@@ -588,7 +884,6 @@ XML;
 
         return date('d/m/Y', strtotime($fecha));
     }
-
     private function numeroSri($valor, int $decimales = 2): string
     {
         return number_format((float) ($valor ?? 0), $decimales, '.', '');
