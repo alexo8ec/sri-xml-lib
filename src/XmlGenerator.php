@@ -712,6 +712,9 @@ XML;
         $detalles = $liquidacion->addChild('detalles');
 
         foreach ($datos['detalles'] as $detalleData) {
+            echo '<pre>';
+            print_r($detalleData);
+            exit;
             $detalle = $detalles->addChild('detalle');
 
             $this->addChildText($detalle, 'codigoPrincipal', $detalleData['codigoPrincipal']);
