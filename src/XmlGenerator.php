@@ -713,6 +713,9 @@ XML;
 
         foreach ($datos['detalles'] as $detalleData) {
             $detalle = $detalles->addChild('detalle');
+            echo '<pre>';
+            print_r($detalleData);
+            exit;
             $this->addChildText($detalle, 'codigoPrincipal', $detalleData['codigoPrincipal']);
             if (!empty($detalleData['codigoAuxiliar'])) {
                 $this->addChildText($detalle, 'codigoAuxiliar', $detalleData['codigoAuxiliar']);
