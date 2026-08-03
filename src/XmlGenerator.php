@@ -712,28 +712,19 @@ XML;
         $detalles = $liquidacion->addChild('detalles');
 
         foreach ($datos['detalles'] as $detalleData) {
-            echo '<pre>';
-            print_r($detalleData);
-            exit;
             $detalle = $detalles->addChild('detalle');
-
             $this->addChildText($detalle, 'codigoPrincipal', $detalleData['codigoPrincipal']);
-
             if (!empty($detalleData['codigoAuxiliar'])) {
                 $this->addChildText($detalle, 'codigoAuxiliar', $detalleData['codigoAuxiliar']);
             }
-
             $this->addChildText($detalle, 'descripcion', $detalleData['descripcion']);
-
             if (!empty($detalleData['unidadMedida'])) {
                 $this->addChildText($detalle, 'unidadMedida', $detalleData['unidadMedida']);
             }
-
             $this->addChildText($detalle, 'cantidad', $this->numeroSri($detalleData['cantidad'], 6));
             $this->addChildText($detalle, 'precioUnitario', $this->numeroSri($detalleData['precioUnitario'], 6));
             $this->addChildText($detalle, 'descuento', $this->numeroSri($detalleData['descuento'] ?? 0, 2));
             $this->addChildText($detalle, 'precioTotalSinImpuesto', $this->numeroSri($detalleData['precioTotalSinImpuesto'], 2));
-
             /*
         |--------------------------------------------------------------------------
         | detallesAdicionales - opcional
