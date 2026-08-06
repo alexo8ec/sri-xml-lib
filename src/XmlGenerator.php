@@ -168,13 +168,11 @@ XML;
             $maquinaFiscal->addChild('serie', $datos['maquinaFiscal']['serie']);
         }
         // infoAdicional
-        if (!empty($datos['infoAdicional'])) {
-            $infoAdicional = $retencion->addChild('infoAdicional');
-            foreach ($datos['infoAdicional'] as $campo) {
-                if (!empty(trim($campo['valor']))) {
-                    $campoNode = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
-                    $campoNode->addAttribute('nombre', $campo['nombre']);
-                }
+        $infoAdicional = $retencion->addChild('infoAdicional');
+        foreach ($this->prepararCamposAdicionales($datos['infoAdicional'] ?? []) as $campo) {
+            if (!empty(trim($campo['valor'] ?? ''))) {
+                $campoNode = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
+                $campoNode->addAttribute('nombre', $campo['nombre']);
             }
         }
         $xmlString = $retencion->asXML();
@@ -280,18 +278,8 @@ XML;
             }
         }
         // infoAdicional
-        $camposAdicionales = $datos['infoAdicional'] ?? [];
-        $camposAdicionales = array_values(array_filter(
-            $camposAdicionales,
-            static fn(array $campo): bool => strcasecmp(trim($campo['nombre'] ?? ''), 'RUC Proveedor') !== 0
-        ));
-        $camposAdicionales[] = [
-            'nombre' => 'RUC Proveedor',
-            'valor' => self::RUC_PROVEEDOR,
-        ];
-
         $infoAdicional = $factura->addChild('infoAdicional');
-        foreach ($camposAdicionales as $campo) {
+        foreach ($this->prepararCamposAdicionales($datos['infoAdicional'] ?? []) as $campo) {
             if (!empty(trim($campo['valor'] ?? ''))) {
                 $campoNode = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
                 $campoNode->addAttribute('nombre', $campo['nombre']);
@@ -377,9 +365,9 @@ XML;
             }
         }
         // infoAdicional
-        if (!empty($datos['infoAdicional'])) {
-            $infoAdicional = $notaCredito->addChild('infoAdicional');
-            foreach ($datos['infoAdicional'] as $campo) {
+        $infoAdicional = $notaCredito->addChild('infoAdicional');
+        foreach ($this->prepararCamposAdicionales($datos['infoAdicional'] ?? []) as $campo) {
+            if (!empty(trim($campo['valor'] ?? ''))) {
                 $campoAdicional = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
                 $campoAdicional->addAttribute('nombre', $campo['nombre']);
             }
@@ -548,20 +536,18 @@ XML;
     | infoAdicional
     |--------------------------------------------------------------------------
     */
-        if (!empty($datos['infoAdicional']) && is_array($datos['infoAdicional'])) {
-            $infoAdicional = $guia->addChild('infoAdicional');
+        $infoAdicional = $guia->addChild('infoAdicional');
 
-            foreach ($datos['infoAdicional'] as $campo) {
-                if (empty($campo['nombre']) || empty($campo['valor'])) {
-                    continue;
-                }
-
-                $campoAdicional = $infoAdicional->addChild('campoAdicional');
-                $campoAdicional->addAttribute('nombre', $this->limpiarTexto($campo['nombre']));
-
-                $node = dom_import_simplexml($campoAdicional);
-                $node->appendChild($node->ownerDocument->createTextNode($this->limpiarTexto($campo['valor'])));
+        foreach ($this->prepararCamposAdicionales($datos['infoAdicional'] ?? []) as $campo) {
+            if (empty($campo['nombre']) || empty($campo['valor'])) {
+                continue;
             }
+
+            $campoAdicional = $infoAdicional->addChild('campoAdicional');
+            $campoAdicional->addAttribute('nombre', $this->limpiarTexto($campo['nombre']));
+
+            $node = dom_import_simplexml($campoAdicional);
+            $node->appendChild($node->ownerDocument->createTextNode($this->limpiarTexto($campo['valor'])));
         }
 
         return $this->formatXml($guia->asXML());
@@ -788,19 +774,17 @@ XML;
                 $this->addChildText($maquinaFiscal, 'serie', $datos['maquinaFiscal']['serie']);
             }
         }
-        if (!empty($datos['infoAdicional']) && is_array($datos['infoAdicional'])) {
-            $infoAdicional = $liquidacion->addChild('infoAdicional');
-            foreach ($datos['infoAdicional'] as $campo) {
-                if (empty($campo['nombre']) || empty($campo['valor'])) {
-                    continue;
-                }
-                $campoAdicional = $infoAdicional->addChild('campoAdicional');
-                $campoAdicional->addAttribute('nombre', $this->limpiarTexto($campo['nombre']));
-                $node = dom_import_simplexml($campoAdicional);
-                $node->appendChild(
-                    $node->ownerDocument->createTextNode($this->limpiarTexto($campo['valor']))
-                );
+        $infoAdicional = $liquidacion->addChild('infoAdicional');
+        foreach ($this->prepararCamposAdicionales($datos['infoAdicional'] ?? []) as $campo) {
+            if (empty($campo['nombre']) || empty($campo['valor'])) {
+                continue;
             }
+            $campoAdicional = $infoAdicional->addChild('campoAdicional');
+            $campoAdicional->addAttribute('nombre', $this->limpiarTexto($campo['nombre']));
+            $node = dom_import_simplexml($campoAdicional);
+            $node->appendChild(
+                $node->ownerDocument->createTextNode($this->limpiarTexto($campo['valor']))
+            );
         }
         return $this->formatXml($liquidacion->asXML());
     }
@@ -915,6 +899,9 @@ XML;
     }
     public function addInfoAdicional($campos)
     {
+        unset($campos['RUC Proveedor']);
+        $campos['RUC Proveedor'] = self::RUC_PROVEEDOR;
+
         $infoAdicional = $this->xml->addChild('infoAdicional');
         foreach ($campos as $nombre => $valor) {
             $campoAdicional = $infoAdicional->addChild('campoAdicional', htmlspecialchars($valor));
@@ -924,5 +911,20 @@ XML;
     public function getXml()
     {
         return $this->xml->asXML();
+    }
+
+    private function prepararCamposAdicionales(array $campos): array
+    {
+        $campos = array_values(array_filter(
+            $campos,
+            static fn($campo): bool => is_array($campo)
+                && strcasecmp(trim($campo['nombre'] ?? ''), 'RUC Proveedor') !== 0
+        ));
+        $campos[] = [
+            'nombre' => 'RUC Proveedor',
+            'valor' => self::RUC_PROVEEDOR,
+        ];
+
+        return $campos;
     }
 }
