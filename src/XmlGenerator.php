@@ -7,6 +7,8 @@ use SimpleXMLElement;
 
 class XmlGenerator
 {
+    private const RUC_PROVEEDOR = '0921605895001';
+
     private $xml;
     public function __construct() {}
     public function generarRetencionXml(array $datos)
@@ -278,13 +280,21 @@ XML;
             }
         }
         // infoAdicional
-        if (!empty($datos['infoAdicional'])) {
-            $infoAdicional = $factura->addChild('infoAdicional');
-            foreach ($datos['infoAdicional'] as $campo) {
-                if (!empty(trim($campo['valor']))) {
-                    $campoNode = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
-                    $campoNode->addAttribute('nombre', $campo['nombre']);
-                }
+        $camposAdicionales = $datos['infoAdicional'] ?? [];
+        $camposAdicionales = array_values(array_filter(
+            $camposAdicionales,
+            static fn(array $campo): bool => strcasecmp(trim($campo['nombre'] ?? ''), 'RUC Proveedor') !== 0
+        ));
+        $camposAdicionales[] = [
+            'nombre' => 'RUC Proveedor',
+            'valor' => self::RUC_PROVEEDOR,
+        ];
+
+        $infoAdicional = $factura->addChild('infoAdicional');
+        foreach ($camposAdicionales as $campo) {
+            if (!empty(trim($campo['valor'] ?? ''))) {
+                $campoNode = $infoAdicional->addChild('campoAdicional', htmlspecialchars($campo['valor']));
+                $campoNode->addAttribute('nombre', $campo['nombre']);
             }
         }
         $xmlString = $factura->asXML();
